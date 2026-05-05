@@ -5,16 +5,23 @@ public class PlayerMeleeAttack2D : MonoBehaviour
     [Header("Attack")]
     [SerializeField] private KeyCode attackKey = KeyCode.F;
     [SerializeField] private Transform attackPoint;
-    [SerializeField] private float attackRange = 0.6f;
-    [SerializeField] private int damage = 20;
-    [SerializeField] private float knockbackForce = 8f;
-    [SerializeField] private float attackCooldown = 0.4f;
+    [SerializeField] private Transform weaponHoldPoint;
+    [SerializeField] private float baseAttackRange = 0.6f;
+    [SerializeField] private int baseDamage = 20;
+    [SerializeField] private float baseKnockbackForce = 8f;
+    [SerializeField] private float baseAttackCooldown = 0.4f;
     [SerializeField] private PlayerAnimation2D playerAnimation;
 
     [Header("Collision")]
     [SerializeField] private LayerMask playerLayer;
 
     private float nextAttackTime;
+    private WeaponPickup2D equippedWeapon;
+
+    private float CurrentAttackRange => equippedWeapon != null ? equippedWeapon.AttackRange : baseAttackRange;
+    private int CurrentDamage => equippedWeapon != null ? equippedWeapon.Damage : baseDamage;
+    private float CurrentKnockbackForce => equippedWeapon != null ? equippedWeapon.KnockbackForce : baseKnockbackForce;
+    private float CurrentAttackCooldown => equippedWeapon != null ? equippedWeapon.AttackCooldown : baseAttackCooldown;
 
     private void Update()
     {
@@ -26,9 +33,27 @@ public class PlayerMeleeAttack2D : MonoBehaviour
             }
 
             Attack();
-            nextAttackTime = Time.time + attackCooldown;
+            nextAttackTime = Time.time + CurrentAttackCooldown;
         }
     }
+
+public void EquipWeapon(WeaponPickup2D weapon)
+{
+    if (weapon == null || weaponHoldPoint == null)
+    {
+        return;
+    }
+
+    if (equippedWeapon != null)
+    {
+        return;
+    }
+
+    equippedWeapon = weapon;
+    equippedWeapon.AttachTo(weaponHoldPoint);
+
+    Debug.Log($"{gameObject.name} picked up {weapon.gameObject.name}");
+}
 
     private void Attack()
     {
@@ -40,7 +65,7 @@ public class PlayerMeleeAttack2D : MonoBehaviour
 
         Collider2D[] hits = Physics2D.OverlapCircleAll(
             attackPoint.position,
-            attackRange,
+            CurrentAttackRange,
             playerLayer
         );
 
@@ -59,7 +84,7 @@ public class PlayerMeleeAttack2D : MonoBehaviour
             }
 
             Vector2 knockbackDirection = hit.transform.position - transform.position;
-            health.TakeDamage(damage, knockbackDirection, knockbackForce);
+            health.TakeDamage(CurrentDamage, knockbackDirection, CurrentKnockbackForce);
         }
     }
 
@@ -70,6 +95,17 @@ public class PlayerMeleeAttack2D : MonoBehaviour
             return;
         }
 
-        Gizmos.DrawWireSphere(attackPoint.position, attackRange);
+        Gizmos.DrawWireSphere(attackPoint.position, CurrentAttackRange);
+    }
+
+    public void ResetWeapon()
+    {
+        if (equippedWeapon == null)
+        {
+            return;
+        }
+
+        equippedWeapon.ResetPickup();
+        equippedWeapon = null;
     }
 }

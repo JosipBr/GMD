@@ -91,6 +91,9 @@ public class RoundManager2D : MonoBehaviour
 
     private void ResetRound()
     {
+        ResetPlayerWeapon(player1Health);
+        ResetPlayerWeapon(player2Health);
+
         ResetPlayer(player1Health, player1SpawnPoint);
         ResetPlayer(player2Health, player2SpawnPoint);
 
@@ -169,6 +172,16 @@ public class RoundManager2D : MonoBehaviour
         if (roundMessageText != null)
         {
             roundMessageText.text = "";
+        }
+    }
+
+    private void ResetPlayerWeapon(PlayerHealth2D playerHealth)
+    {
+        PlayerMeleeAttack2D attack = playerHealth.GetComponent<PlayerMeleeAttack2D>();
+
+        if (attack != null)
+        {
+            attack.ResetWeapon();
         }
     }
 }
