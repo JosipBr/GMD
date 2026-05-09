@@ -8,6 +8,9 @@ public class RoundManager2D : MonoBehaviour
     [SerializeField] private PlayerHealth2D player1Health;
     [SerializeField] private PlayerHealth2D player2Health;
 
+    [Header("Arena")]
+    [SerializeField] private ArenaManager2D arenaManager;
+
     [Header("Spawn Points")]
     [SerializeField] private Transform player1SpawnPoint;
     [SerializeField] private Transform player2SpawnPoint;
@@ -25,6 +28,7 @@ public class RoundManager2D : MonoBehaviour
     private int player1Score;
     private int player2Score;
     private bool isRoundEnding;
+    private Arena2D currentArena;
 
     private void OnEnable()
     {
@@ -40,6 +44,11 @@ public class RoundManager2D : MonoBehaviour
 
     private void Start()
     {
+        if (arenaManager != null)
+        {
+            currentArena = arenaManager.LoadFirstArena();
+        }
+
         UpdateScoreText();
         ClearRoundMessage();
         ResetRound();
@@ -89,6 +98,11 @@ public class RoundManager2D : MonoBehaviour
 
         yield return new WaitForSeconds(roundResetDelay);
 
+        if (arenaManager != null)
+        {
+            currentArena = arenaManager.LoadNextArena();
+        }
+
         ResetRound();
         ClearRoundMessage();
 
@@ -99,16 +113,23 @@ public class RoundManager2D : MonoBehaviour
 
     private void ResetRound()
     {
+        if (currentArena == null)
+        {
+            Debug.LogWarning("No current arena assigned.");
+            return;
+        }
+
         ResetPlayerWeapon(player1Health);
         ResetPlayerWeapon(player2Health);
 
         if (weaponSpawner != null)
         {
+            weaponSpawner.SetSpawnPoints(currentArena.WeaponSpawnPoints);
             weaponSpawner.StartSpawningForRound();
         }
 
-        ResetPlayer(player1Health, player1SpawnPoint);
-        ResetPlayer(player2Health, player2SpawnPoint);
+        ResetPlayer(player1Health, currentArena.Player1SpawnPoint);
+        ResetPlayer(player2Health, currentArena.Player2SpawnPoint);
 
         player1Health.ResetHealth();
         player2Health.ResetHealth();

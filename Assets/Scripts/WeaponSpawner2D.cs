@@ -135,4 +135,9 @@ public class WeaponSpawner2D : MonoBehaviour
     {
         spawnedWeapons.RemoveAll(weapon => weapon == null);
     }
+
+    public void SetSpawnPoints(Transform[] newSpawnPoints)
+    {
+        spawnPoints = newSpawnPoints;
+    }
 }
