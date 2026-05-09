@@ -1,13 +1,26 @@
 using UnityEngine;
 
+public enum WeaponType2D
+{
+    Melee,
+    Gun
+}
+
 [RequireComponent(typeof(Collider2D))]
 public class WeaponPickup2D : MonoBehaviour
 {
+    [Header("Weapon Type")]
+    [SerializeField] private WeaponType2D weaponType = WeaponType2D.Melee;
+
     [Header("Weapon Stats")]
     [SerializeField] private int damage = 35;
     [SerializeField] private float attackRange = 1.1f;
     [SerializeField] private float knockbackForce = 12f;
     [SerializeField] private float attackCooldown = 0.55f;
+
+    [Header("Gun Settings")]
+    [SerializeField] private Projectile2D projectilePrefab;
+    [SerializeField] private float projectileSpeed = 12f;
 
     [Header("Equipped Visual Transform")]
     [SerializeField] private Vector3 equippedLocalPosition = new Vector3(0.35f, 0.05f, 0f);
@@ -16,17 +29,21 @@ public class WeaponPickup2D : MonoBehaviour
 
     private Collider2D weaponCollider;
     private Rigidbody2D rb;
-    private bool isEquipped;
 
     private Transform originalParent;
     private Vector3 originalPosition;
     private Quaternion originalRotation;
     private Vector3 originalScale;
 
+    public bool IsEquipped { get; private set; }
+
+    public WeaponType2D WeaponType => weaponType;
     public int Damage => damage;
     public float AttackRange => attackRange;
     public float KnockbackForce => knockbackForce;
     public float AttackCooldown => attackCooldown;
+    public Projectile2D ProjectilePrefab => projectilePrefab;
+    public float ProjectileSpeed => projectileSpeed;
 
     private void Awake()
     {
@@ -41,7 +58,7 @@ public class WeaponPickup2D : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (isEquipped)
+        if (IsEquipped)
         {
             return;
         }
@@ -58,7 +75,7 @@ public class WeaponPickup2D : MonoBehaviour
 
     public void AttachTo(Transform weaponHoldPoint)
     {
-        isEquipped = true;
+        IsEquipped = true;
 
         transform.SetParent(weaponHoldPoint);
         transform.localPosition = equippedLocalPosition;
@@ -78,7 +95,7 @@ public class WeaponPickup2D : MonoBehaviour
 
     public void ResetPickup()
     {
-        isEquipped = false;
+        IsEquipped = false;
 
         transform.SetParent(originalParent);
         transform.position = originalPosition;
@@ -96,5 +113,13 @@ public class WeaponPickup2D : MonoBehaviour
             rb.linearVelocity = Vector2.zero;
             rb.angularVelocity = 0f;
         }
+    }
+
+    public void SetOriginalTransform(Vector3 position, Quaternion rotation, Vector3 scale)
+    {
+        originalParent = null;
+        originalPosition = position;
+        originalRotation = rotation;
+        originalScale = scale;
     }
 }

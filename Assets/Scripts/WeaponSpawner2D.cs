@@ -1,0 +1,138 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class WeaponSpawner2D : MonoBehaviour
+{
+    [Header("Weapon Prefabs")]
+    [SerializeField] private WeaponPickup2D[] weaponPrefabs;
+
+    [Header("Spawn Points")]
+    [SerializeField] private Transform[] spawnPoints;
+
+    [Header("Spawn Timing")]
+    [SerializeField] private float minSpawnDelay = 2f;
+    [SerializeField] private float maxSpawnDelay = 5f;
+
+    [Header("Spawn Limits")]
+    [SerializeField] private int maxActiveWeapons = 2;
+
+    [Header("Drop Settings")]
+    [SerializeField] private float spawnHeight = 3f;
+    [SerializeField] private float dropSpeed = 2f;
+
+    private readonly List<WeaponPickup2D> spawnedWeapons = new();
+    private Coroutine spawnRoutine;
+
+    public void StartSpawningForRound()
+    {
+        StopSpawning();
+        ClearSpawnedWeapons();
+
+        spawnRoutine = StartCoroutine(SpawnLoop());
+    }
+
+    public void StopSpawning()
+    {
+        if (spawnRoutine == null)
+        {
+            return;
+        }
+
+        StopCoroutine(spawnRoutine);
+        spawnRoutine = null;
+    }
+
+    private IEnumerator SpawnLoop()
+    {
+        while (true)
+        {
+            float delay = Random.Range(minSpawnDelay, maxSpawnDelay);
+            yield return new WaitForSeconds(delay);
+
+            RemoveMissingWeapons();
+
+            if (spawnedWeapons.Count >= maxActiveWeapons)
+            {
+                continue;
+            }
+
+            SpawnRandomWeapon();
+        }
+    }
+
+    private void SpawnRandomWeapon()
+    {
+        if (weaponPrefabs == null || weaponPrefabs.Length == 0)
+        {
+            Debug.LogWarning("WeaponSpawner2D has no weapon prefabs assigned.");
+            return;
+        }
+
+        if (spawnPoints == null || spawnPoints.Length == 0)
+        {
+            Debug.LogWarning("WeaponSpawner2D has no spawn points assigned.");
+            return;
+        }
+
+        WeaponPickup2D weaponPrefab = weaponPrefabs[Random.Range(0, weaponPrefabs.Length)];
+        Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
+
+        Vector3 targetPosition = spawnPoint.position;
+        Vector3 startPosition = targetPosition + Vector3.up * spawnHeight;
+
+        WeaponPickup2D spawnedWeapon = Instantiate(
+            weaponPrefab,
+            startPosition,
+            Quaternion.identity
+        );
+
+        spawnedWeapon.SetOriginalTransform(
+            targetPosition,
+            Quaternion.identity,
+            spawnedWeapon.transform.localScale
+        );
+
+        spawnedWeapons.Add(spawnedWeapon);
+
+        StartCoroutine(DropWeaponToPoint(spawnedWeapon, targetPosition));
+    }
+
+    private IEnumerator DropWeaponToPoint(WeaponPickup2D weapon, Vector3 targetPosition)
+    {
+        while (weapon != null && !weapon.IsEquipped)
+        {
+            weapon.transform.position = Vector3.MoveTowards(
+                weapon.transform.position,
+                targetPosition,
+                dropSpeed * Time.deltaTime
+            );
+
+            if (Vector3.Distance(weapon.transform.position, targetPosition) <= 0.01f)
+            {
+                weapon.transform.position = targetPosition;
+                yield break;
+            }
+
+            yield return null;
+        }
+    }
+
+    private void ClearSpawnedWeapons()
+    {
+        foreach (WeaponPickup2D weapon in spawnedWeapons)
+        {
+            if (weapon != null)
+            {
+                Destroy(weapon.gameObject);
+            }
+        }
+
+        spawnedWeapons.Clear();
+    }
+
+    private void RemoveMissingWeapons()
+    {
+        spawnedWeapons.RemoveAll(weapon => weapon == null);
+    }
+}

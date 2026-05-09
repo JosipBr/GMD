@@ -19,6 +19,9 @@ public class RoundManager2D : MonoBehaviour
     [Header("Round Settings")]
     [SerializeField] private float roundResetDelay = 2f;
 
+    [Header("Weapons")]
+    [SerializeField] private WeaponSpawner2D weaponSpawner;
+
     private int player1Score;
     private int player2Score;
     private bool isRoundEnding;
@@ -59,6 +62,11 @@ public class RoundManager2D : MonoBehaviour
 
         isRoundEnding = true;
 
+        if (weaponSpawner != null)
+        {
+            weaponSpawner.StopSpawning();
+        }
+
         if (deadPlayer == player1Health)
         {
             player2Score++;
@@ -93,6 +101,11 @@ public class RoundManager2D : MonoBehaviour
     {
         ResetPlayerWeapon(player1Health);
         ResetPlayerWeapon(player2Health);
+
+        if (weaponSpawner != null)
+        {
+            weaponSpawner.StartSpawningForRound();
+        }
 
         ResetPlayer(player1Health, player1SpawnPoint);
         ResetPlayer(player2Health, player2SpawnPoint);

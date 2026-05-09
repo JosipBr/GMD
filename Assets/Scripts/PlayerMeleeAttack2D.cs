@@ -18,6 +18,8 @@ public class PlayerMeleeAttack2D : MonoBehaviour
     private float nextAttackTime;
     private WeaponPickup2D equippedWeapon;
 
+    private bool HasGun => equippedWeapon != null && equippedWeapon.WeaponType == WeaponType2D.Gun;
+
     private float CurrentAttackRange => equippedWeapon != null ? equippedWeapon.AttackRange : baseAttackRange;
     private int CurrentDamage => equippedWeapon != null ? equippedWeapon.Damage : baseDamage;
     private float CurrentKnockbackForce => equippedWeapon != null ? equippedWeapon.KnockbackForce : baseKnockbackForce;
@@ -32,30 +34,49 @@ public class PlayerMeleeAttack2D : MonoBehaviour
                 playerAnimation.PlayAttack();
             }
 
-            Attack();
+            if (HasGun)
+            {
+                Shoot();
+            }
+            else
+            {
+                MeleeAttack();
+            }
+
             nextAttackTime = Time.time + CurrentAttackCooldown;
         }
     }
 
-public void EquipWeapon(WeaponPickup2D weapon)
-{
-    if (weapon == null || weaponHoldPoint == null)
+    public void EquipWeapon(WeaponPickup2D weapon)
     {
-        return;
+        if (weapon == null || weaponHoldPoint == null)
+        {
+            return;
+        }
+
+        if (equippedWeapon != null)
+        {
+            return;
+        }
+
+        equippedWeapon = weapon;
+        equippedWeapon.AttachTo(weaponHoldPoint);
+
+        Debug.Log($"{gameObject.name} picked up {weapon.gameObject.name}");
     }
 
-    if (equippedWeapon != null)
+    public void ResetWeapon()
     {
-        return;
+        if (equippedWeapon == null)
+        {
+            return;
+        }
+
+        equippedWeapon.ResetPickup();
+        equippedWeapon = null;
     }
 
-    equippedWeapon = weapon;
-    equippedWeapon.AttachTo(weaponHoldPoint);
-
-    Debug.Log($"{gameObject.name} picked up {weapon.gameObject.name}");
-}
-
-    private void Attack()
+    private void MeleeAttack()
     {
         if (attackPoint == null)
         {
@@ -88,6 +109,36 @@ public void EquipWeapon(WeaponPickup2D weapon)
         }
     }
 
+    private void Shoot()
+    {
+        if (equippedWeapon.ProjectilePrefab == null)
+        {
+            Debug.LogWarning($"{equippedWeapon.gameObject.name} is missing a projectile prefab.");
+            return;
+        }
+
+        Vector2 shootDirection = transform.localScale.x >= 0 ? Vector2.right : Vector2.left;
+
+        Vector3 spawnPosition = attackPoint != null
+            ? attackPoint.position
+            : weaponHoldPoint.position;
+
+        Projectile2D projectile = Instantiate(
+            equippedWeapon.ProjectilePrefab,
+            spawnPosition,
+            Quaternion.identity
+        );
+
+        projectile.Initialize(
+            transform,
+            shootDirection,
+            equippedWeapon.ProjectileSpeed,
+            equippedWeapon.Damage,
+            equippedWeapon.KnockbackForce,
+            playerLayer
+        );
+    }
+
     private void OnDrawGizmosSelected()
     {
         if (attackPoint == null)
@@ -96,16 +147,5 @@ public void EquipWeapon(WeaponPickup2D weapon)
         }
 
         Gizmos.DrawWireSphere(attackPoint.position, CurrentAttackRange);
-    }
-
-    public void ResetWeapon()
-    {
-        if (equippedWeapon == null)
-        {
-            return;
-        }
-
-        equippedWeapon.ResetPickup();
-        equippedWeapon = null;
     }
 }
