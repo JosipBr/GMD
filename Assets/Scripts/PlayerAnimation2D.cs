@@ -58,4 +58,9 @@ public class PlayerAnimation2D : MonoBehaviour
     {
         animator.SetTrigger("Shoot");
     }
+
+    public void PlayLedgeClimb()
+    {
+        animator.SetTrigger("LedgeClimb");
+    }
 }
