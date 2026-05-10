@@ -44,4 +44,5 @@ public class PlayerHealthBar2D : MonoBehaviour
         slider.maxValue = maxHealth;
         slider.value = currentHealth;
     }
+    
 }
