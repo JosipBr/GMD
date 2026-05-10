@@ -29,17 +29,22 @@ public class PlayerMeleeAttack2D : MonoBehaviour
     {
         if (Input.GetKeyDown(attackKey) && Time.time >= nextAttackTime)
         {
-            if (playerAnimation != null)
-            {
-                playerAnimation.PlayAttack();
-            }
-
             if (HasGun)
             {
+                if (playerAnimation != null)
+                {
+                    playerAnimation.PlayShoot();
+                }
+
                 Shoot();
             }
             else
             {
+                if (playerAnimation != null)
+                {
+                    playerAnimation.PlayAttack();
+                }
+
                 MeleeAttack();
             }
 

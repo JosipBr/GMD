@@ -53,4 +53,9 @@ public class PlayerAnimation2D : MonoBehaviour
     {
         animator.SetBool("IsWallSliding", isWallSliding);
     }
+
+    public void PlayShoot()
+    {
+        animator.SetTrigger("Shoot");
+    }
 }
