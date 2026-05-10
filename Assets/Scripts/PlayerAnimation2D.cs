@@ -38,4 +38,9 @@ public class PlayerAnimation2D : MonoBehaviour
     {
         animator.SetTrigger("Attack");
     }
+
+    public void PlayDoubleJump()
+    {
+        animator.SetTrigger("DoubleJump");
+    }
 }

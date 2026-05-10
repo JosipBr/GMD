@@ -7,6 +7,9 @@ public class PlayerMovement2D : MonoBehaviour
     [SerializeField] private float moveSpeed = 8f;
     [SerializeField] private float jumpForce = 13f;
 
+    [Header("Jumping")]
+    [SerializeField] private int maxJumpCount = 2;
+
     [Header("Input")]
     [SerializeField] private KeyCode leftKey = KeyCode.A;
     [SerializeField] private KeyCode rightKey = KeyCode.D;
@@ -17,15 +20,25 @@ public class PlayerMovement2D : MonoBehaviour
     [SerializeField] private float groundCheckRadius = 0.15f;
     [SerializeField] private LayerMask groundLayer;
 
+    [Header("Animation")]
+    [SerializeField] private PlayerAnimation2D playerAnimation;
+
     private Rigidbody2D rb;
     private float horizontalInput;
     private bool jumpPressed;
+    private int jumpsRemaining;
 
     public bool IsGrounded { get; private set; }
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        jumpsRemaining = maxJumpCount;
+
+        if (playerAnimation == null)
+        {
+            playerAnimation = GetComponentInChildren<PlayerAnimation2D>();
+        }
     }
 
     private void Update()
@@ -65,11 +78,24 @@ public class PlayerMovement2D : MonoBehaviour
             groundLayer
         );
 
+        if (IsGrounded && rb.linearVelocity.y <= 0.01f)
+        {
+            jumpsRemaining = maxJumpCount;
+        }
+
         rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
 
-        if (jumpPressed && IsGrounded)
+        if (jumpPressed && jumpsRemaining > 0)
         {
+            bool isDoubleJump = !IsGrounded;
+
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            jumpsRemaining--;
+
+            if (isDoubleJump && playerAnimation != null)
+            {
+                playerAnimation.PlayDoubleJump();
+            }
         }
 
         jumpPressed = false;
