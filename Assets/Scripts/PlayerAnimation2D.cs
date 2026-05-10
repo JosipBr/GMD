@@ -63,4 +63,24 @@ public class PlayerAnimation2D : MonoBehaviour
     {
         animator.SetTrigger("LedgeClimb");
     }
+
+    public void PlayDeath()
+    {
+        animator.SetTrigger("Death");
+    }
+
+    public void ResetToIdle()
+    {
+        animator.ResetTrigger("Attack");
+        animator.ResetTrigger("DoubleJump");
+        animator.ResetTrigger("Dash");
+        animator.ResetTrigger("Shoot");
+        animator.ResetTrigger("Death");
+
+        animator.SetBool("IsWallSliding", false);
+        animator.SetBool("IsGrounded", true);
+        animator.SetFloat("Speed", 0f);
+
+        animator.Play("Idle", 0, 0f);
+    }
 }

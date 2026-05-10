@@ -12,6 +12,6 @@ public class FallDeathZone2D : MonoBehaviour
             return;
         }
 
-        playerHealth.Kill();
+        playerHealth.Kill(playDeathAnimation: false);
     }
 }

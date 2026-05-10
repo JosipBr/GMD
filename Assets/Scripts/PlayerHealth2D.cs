@@ -1,15 +1,22 @@
 using System;
+using System.Collections;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerHealth2D : MonoBehaviour
 {
+    [Header("Health")]
     [SerializeField] private int maxHealth = 100;
+
+    [Header("Death Animation")]
+    [SerializeField] private PlayerAnimation2D playerAnimation;
+    [SerializeField] private float damageDeathRoundDelay = 0.6f;
 
     private int currentHealth;
     private Rigidbody2D rb;
     private bool isDead;
     private bool isInvulnerable;
+    private Coroutine deathCoroutine;
 
     public int MaxHealth => maxHealth;
     public int CurrentHealth => currentHealth;
@@ -22,6 +29,12 @@ public class PlayerHealth2D : MonoBehaviour
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        if (playerAnimation == null)
+        {
+            playerAnimation = GetComponentInChildren<PlayerAnimation2D>();
+        }
+
         ResetHealth();
     }
 
@@ -49,18 +62,36 @@ public class PlayerHealth2D : MonoBehaviour
 
         if (currentHealth <= 0)
         {
-            Die();
+            Die(playDeathAnimation: true);
         }
     }
 
     public void ResetHealth()
     {
+        if (deathCoroutine != null)
+        {
+            StopCoroutine(deathCoroutine);
+            deathCoroutine = null;
+        }
+
         isDead = false;
+        isInvulnerable = false;
         currentHealth = maxHealth;
+
+        if (playerAnimation != null)
+        {
+            playerAnimation.ResetToIdle();
+        }
+
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
     }
 
     public void Kill()
+    {
+        Kill(playDeathAnimation: false);
+    }
+
+    public void Kill(bool playDeathAnimation)
     {
         if (isDead)
         {
@@ -70,10 +101,10 @@ public class PlayerHealth2D : MonoBehaviour
         currentHealth = 0;
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
 
-        Die();
+        Die(playDeathAnimation);
     }
 
-    private void Die()
+    private void Die(bool playDeathAnimation)
     {
         if (isDead)
         {
@@ -84,6 +115,25 @@ public class PlayerHealth2D : MonoBehaviour
 
         Debug.Log($"{gameObject.name} died.");
 
+        if (playDeathAnimation && playerAnimation != null)
+        {
+            playerAnimation.PlayDeath();
+        }
+
+        if (playDeathAnimation && damageDeathRoundDelay > 0f)
+        {
+            deathCoroutine = StartCoroutine(NotifyDeathAfterDelay());
+            return;
+        }
+
+        OnDied?.Invoke(this);
+    }
+
+    private IEnumerator NotifyDeathAfterDelay()
+    {
+        yield return new WaitForSeconds(damageDeathRoundDelay);
+
+        deathCoroutine = null;
         OnDied?.Invoke(this);
     }
 
