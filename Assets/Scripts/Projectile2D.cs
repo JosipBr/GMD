@@ -65,6 +65,12 @@ public class Projectile2D : MonoBehaviour
             return;
         }
 
+        if (health.IsInvulnerable)
+        {
+            Debug.Log($"{health.gameObject.name} dodged the bullet.");
+            return;
+        }
+
         Vector2 knockbackDirection = other.transform.position - transform.position;
         health.TakeDamage(damage, knockbackDirection, knockbackForce);
 

@@ -677,6 +677,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement2D
   moveSpeed: 8
   jumpForce: 13
+  maxJumpCount: 2
+  dashKey: 304
+  dashSpeed: 15
+  dashDuration: 0.15
+  dashCooldown: 0.8
   leftKey: 97
   rightKey: 100
   jumpKey: 119
@@ -685,6 +690,8 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
+  playerAnimation: {fileID: 0}
+  playerHealth: {fileID: 0}
 --- !u!70 &714851561
 CapsuleCollider2D:
   m_ObjectHideFlags: 0
@@ -1262,6 +1269,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement2D
   moveSpeed: 8
   jumpForce: 13
+  maxJumpCount: 2
+  dashKey: 107
+  dashSpeed: 15
+  dashDuration: 0.15
+  dashCooldown: 0.8
   leftKey: 276
   rightKey: 275
   jumpKey: 273
@@ -1270,6 +1282,8 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
+  playerAnimation: {fileID: 0}
+  playerHealth: {fileID: 0}
 --- !u!70 &1096370177
 CapsuleCollider2D:
   m_ObjectHideFlags: 0

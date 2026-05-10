@@ -43,4 +43,9 @@ public class PlayerAnimation2D : MonoBehaviour
     {
         animator.SetTrigger("DoubleJump");
     }
+
+    public void PlayDash()
+    {
+        animator.SetTrigger("Dash");
+    }
 }

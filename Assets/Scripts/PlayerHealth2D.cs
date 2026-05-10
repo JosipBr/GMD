@@ -9,10 +9,12 @@ public class PlayerHealth2D : MonoBehaviour
     private int currentHealth;
     private Rigidbody2D rb;
     private bool isDead;
+    private bool isInvulnerable;
 
     public int MaxHealth => maxHealth;
     public int CurrentHealth => currentHealth;
     public bool IsDead => isDead;
+    public bool IsInvulnerable => isInvulnerable;
 
     public event Action<PlayerHealth2D> OnDied;
     public event Action<int, int> OnHealthChanged;
@@ -27,6 +29,12 @@ public class PlayerHealth2D : MonoBehaviour
     {
         if (isDead)
         {
+            return;
+        }
+
+        if (isInvulnerable)
+        {
+            Debug.Log($"{gameObject.name} ignored damage because they are invulnerable.");
             return;
         }
 
@@ -77,5 +85,10 @@ public class PlayerHealth2D : MonoBehaviour
         Debug.Log($"{gameObject.name} died.");
 
         OnDied?.Invoke(this);
+    }
+
+    public void SetInvulnerable(bool invulnerable)
+    {
+        isInvulnerable = invulnerable;
     }
 }
