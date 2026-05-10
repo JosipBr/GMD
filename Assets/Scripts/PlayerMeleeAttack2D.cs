@@ -6,6 +6,7 @@ public class PlayerMeleeAttack2D : MonoBehaviour
     [SerializeField] private KeyCode attackKey = KeyCode.F;
     [SerializeField] private Transform attackPoint;
     [SerializeField] private Transform weaponHoldPoint;
+    [SerializeField] private Transform weaponAttackPoint;
     [SerializeField] private float baseAttackRange = 0.6f;
     [SerializeField] private int baseDamage = 20;
     [SerializeField] private float baseKnockbackForce = 8f;
@@ -17,6 +18,7 @@ public class PlayerMeleeAttack2D : MonoBehaviour
 
     private float nextAttackTime;
     private WeaponPickup2D equippedWeapon;
+    private WeaponUseAnimation2D equippedWeaponUseAnimation;
 
     private bool HasGun => equippedWeapon != null && equippedWeapon.WeaponType == WeaponType2D.Gun;
 
@@ -29,6 +31,8 @@ public class PlayerMeleeAttack2D : MonoBehaviour
     {
         if (Input.GetKeyDown(attackKey) && Time.time >= nextAttackTime)
         {
+            PlayEquippedWeaponUseAnimation();
+
             if (HasGun)
             {
                 if (playerAnimation != null)
@@ -65,7 +69,9 @@ public class PlayerMeleeAttack2D : MonoBehaviour
         }
 
         equippedWeapon = weapon;
-        equippedWeapon.AttachTo(weaponHoldPoint);
+        equippedWeapon.AttachTo(transform, weaponHoldPoint);
+
+        equippedWeaponUseAnimation = equippedWeapon.GetComponentInChildren<WeaponUseAnimation2D>();
 
         Debug.Log($"{gameObject.name} picked up {weapon.gameObject.name}");
     }
@@ -79,6 +85,24 @@ public class PlayerMeleeAttack2D : MonoBehaviour
 
         equippedWeapon.ResetPickup();
         equippedWeapon = null;
+        equippedWeaponUseAnimation = null;
+    }
+
+    private void PlayEquippedWeaponUseAnimation()
+    {
+        if (equippedWeaponUseAnimation == null)
+        {
+            return;
+        }
+
+        if (HasGun)
+        {
+            equippedWeaponUseAnimation.PlayUseAnimation();
+        }
+        else
+        {
+            equippedWeaponUseAnimation.PlayUseAnimation(weaponAttackPoint);
+        }
     }
 
     private void MeleeAttack()
@@ -124,8 +148,8 @@ public class PlayerMeleeAttack2D : MonoBehaviour
 
         Vector2 shootDirection = transform.localScale.x >= 0 ? Vector2.right : Vector2.left;
 
-        Vector3 spawnPosition = attackPoint != null
-            ? attackPoint.position
+        Vector3 spawnPosition = equippedWeapon.MuzzlePoint != null
+            ? equippedWeapon.MuzzlePoint.position
             : weaponHoldPoint.position;
 
         Projectile2D projectile = Instantiate(

@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 8464405016974117252}
   - component: {fileID: 6486849241218749641}
   - component: {fileID: 6321091512146488999}
+  - component: {fileID: 8495342421264469438}
   m_Layer: 0
   m_Name: PistolWeapon
   m_TagString: Weapon
@@ -30,9 +31,10 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 1.5, y: -1.5, z: 0}
-  m_LocalScale: {x: 0.55, y: 0.25, z: 1}
+  m_LocalScale: {x: 0.33, y: 0.22, z: 1}
   m_ConstrainProportionsScale: 0
-  m_Children: []
+  m_Children:
+  - {fileID: 5138037506957936338}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &864088027732764403
@@ -84,8 +86,8 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_MaskInteraction: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0, g: 0.38613012, b: 0.8113208, a: 1}
+  m_Sprite: {fileID: 21300000, guid: c9ef79ba59db38f40bd698e29162563d, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -132,7 +134,7 @@ BoxCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 10, y: 5}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -186,6 +188,56 @@ MonoBehaviour:
   attackCooldown: 0.35
   projectilePrefab: {fileID: 4749422620401318700, guid: 2f1e61fe8edf74d5e8c6cc3b68a0c611, type: 3}
   projectileSpeed: 14
-  equippedLocalPosition: {x: 0.3, y: 0.05, z: 0}
+  muzzlePoint: {fileID: 5138037506957936338}
+  equippedLocalPosition: {x: 0.45, y: 0.42, z: 0}
   equippedLocalRotation: {x: 0, y: 0, z: 0}
-  equippedLocalScale: {x: 0.45, y: 0.2, z: 1}
+  equippedLocalScale: {x: 0.33, y: 0.22, z: 1}
+--- !u!114 &8495342421264469438
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6950143755832857659}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f38f4453dc9be419fb3f8ebe7b6039ca, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::WeaponUseAnimation2D
+  attackPointLocalOffset: {x: 0, y: 0, z: 0}
+  attackLocalRotation: {x: 0, y: 0, z: 55}
+  relativeUsePositionOffset: {x: -0.08, y: 0.05, z: 0}
+  relativeUseRotationOffset: {x: 0, y: 0, z: 8}
+  moveToAttackDuration: 0.06
+  returnDuration: 0.1
+--- !u!1 &7419294705622020353
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5138037506957936338}
+  m_Layer: 0
+  m_Name: MuzzlePoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5138037506957936338
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7419294705622020353}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.29, y: 0.87, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 4783839779333078937}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

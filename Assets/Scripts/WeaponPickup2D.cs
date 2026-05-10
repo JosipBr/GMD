@@ -21,6 +21,7 @@ public class WeaponPickup2D : MonoBehaviour
     [Header("Gun Settings")]
     [SerializeField] private Projectile2D projectilePrefab;
     [SerializeField] private float projectileSpeed = 12f;
+    [SerializeField] private Transform muzzlePoint;
 
     [Header("Equipped Visual Transform")]
     [SerializeField] private Vector3 equippedLocalPosition = new Vector3(0.35f, 0.05f, 0f);
@@ -44,6 +45,7 @@ public class WeaponPickup2D : MonoBehaviour
     public float AttackCooldown => attackCooldown;
     public Projectile2D ProjectilePrefab => projectilePrefab;
     public float ProjectileSpeed => projectileSpeed;
+    public Transform MuzzlePoint => muzzlePoint;
 
     private void Awake()
     {
@@ -73,12 +75,13 @@ public class WeaponPickup2D : MonoBehaviour
         playerAttack.EquipWeapon(this);
     }
 
-    public void AttachTo(Transform weaponHoldPoint)
+    public void AttachTo(Transform playerRoot, Transform weaponHoldPoint)
     {
         IsEquipped = true;
 
-        transform.SetParent(weaponHoldPoint);
-        transform.localPosition = equippedLocalPosition;
+        transform.SetParent(playerRoot);
+
+        transform.localPosition = weaponHoldPoint.localPosition + equippedLocalPosition;
         transform.localEulerAngles = equippedLocalRotation;
         transform.localScale = equippedLocalScale;
 

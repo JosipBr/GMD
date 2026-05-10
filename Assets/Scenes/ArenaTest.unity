@@ -908,6 +908,7 @@ Transform:
   - {fileID: 1453962303}
   - {fileID: 1523932142}
   - {fileID: 1587718422}
+  - {fileID: 1045594881}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &714851565
@@ -925,6 +926,7 @@ MonoBehaviour:
   attackKey: 102
   attackPoint: {fileID: 745010439}
   weaponHoldPoint: {fileID: 1453962303}
+  weaponAttackPoint: {fileID: 1045594881}
   baseAttackRange: 0.6
   baseDamage: 20
   baseKnockbackForce: 8
@@ -1273,6 +1275,37 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1045594880
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1045594881}
+  m_Layer: 6
+  m_Name: WeaponAttackPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1045594881
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1045594880}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.35, y: 0.65, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 714851564}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1090521880
 GameObject:
   m_ObjectHideFlags: 0
@@ -1514,6 +1547,7 @@ Transform:
   - {fileID: 544486984}
   - {fileID: 531742677}
   - {fileID: 713625626}
+  - {fileID: 1668949270}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1096370181
@@ -1531,6 +1565,7 @@ MonoBehaviour:
   attackKey: 108
   attackPoint: {fileID: 300885290}
   weaponHoldPoint: {fileID: 544486984}
+  weaponAttackPoint: {fileID: 1668949270}
   baseAttackRange: 0.6
   baseDamage: 20
   baseKnockbackForce: 8
@@ -1812,6 +1847,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 714851564}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1668949269
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1668949270}
+  m_Layer: 6
+  m_Name: WeaponAttackPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1668949270
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1668949269}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.35, y: 0.65, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1096370180}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1683226105
 GameObject:
@@ -2181,7 +2247,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::WeaponSpawner2D
   weaponPrefabs:
-  - {fileID: 7465085069781326378, guid: e9ab0d41666424a7784b381451316bbb, type: 3}
+  - {fileID: 7465085069781326378, guid: 25ef9a28b0fa74278bd69d0ec982aeb2, type: 3}
   - {fileID: 6321091512146488999, guid: 9d9824e03b0c24591a21a6bcabfe2e4f, type: 3}
   spawnPoints:
   - {fileID: 0}
