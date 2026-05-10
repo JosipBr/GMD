@@ -48,4 +48,9 @@ public class PlayerAnimation2D : MonoBehaviour
     {
         animator.SetTrigger("Dash");
     }
+
+    public void SetWallSliding(bool isWallSliding)
+    {
+        animator.SetBool("IsWallSliding", isWallSliding);
+    }
 }

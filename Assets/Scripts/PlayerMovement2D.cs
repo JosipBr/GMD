@@ -16,6 +16,11 @@ public class PlayerMovement2D : MonoBehaviour
     [SerializeField] private float dashDuration = 0.15f;
     [SerializeField] private float dashCooldown = 0.8f;
 
+    [Header("Wall Slide")]
+    [SerializeField] private Transform wallCheck;
+    [SerializeField] private float wallCheckRadius = 0.15f;
+    [SerializeField] private float wallSlideSpeed = 2.5f;
+
     [Header("Input")]
     [SerializeField] private KeyCode leftKey = KeyCode.A;
     [SerializeField] private KeyCode rightKey = KeyCode.D;
@@ -45,6 +50,7 @@ public class PlayerMovement2D : MonoBehaviour
     private float facingDirection = 1f;
 
     public bool IsGrounded { get; private set; }
+    public bool IsWallSliding { get; private set; }
 
     private void Awake()
     {
@@ -58,7 +64,23 @@ public class PlayerMovement2D : MonoBehaviour
 
         if (playerHealth == null)
         {
-            playerHealth = GetComponentInParent<PlayerHealth2D>();
+            playerHealth = GetComponent<PlayerHealth2D>();
+        }
+    }
+
+    private void OnDisable()
+    {
+        isDashing = false;
+        IsWallSliding = false;
+
+        if (playerHealth != null)
+        {
+            playerHealth.SetInvulnerable(false);
+        }
+
+        if (playerAnimation != null)
+        {
+            playerAnimation.SetWallSliding(false);
         }
     }
 
@@ -98,7 +120,7 @@ public class PlayerMovement2D : MonoBehaviour
         }
     }
 
-    private void FixedUpdate()
+   private void FixedUpdate()
     {
         IsGrounded = Physics2D.OverlapCircle(
             groundCheck.position,
@@ -119,7 +141,18 @@ public class PlayerMovement2D : MonoBehaviour
             return;
         }
 
-        rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
+        UpdateWallSlide();
+
+        if (IsWallSliding)
+        {
+            // Do not keep pushing horizontally into the wall.
+            // Just slide downward slowly.
+            rb.linearVelocity = new Vector2(0f, -wallSlideSpeed);
+        }
+        else
+        {
+            rb.linearVelocity = new Vector2(horizontalInput * moveSpeed, rb.linearVelocity.y);
+        }
 
         if (jumpPressed && jumpsRemaining > 0)
         {
@@ -143,9 +176,43 @@ public class PlayerMovement2D : MonoBehaviour
         dashPressed = false;
     }
 
+    private void UpdateWallSlide()
+    {
+        bool isTouchingWall = false;
+
+        if (wallCheck != null)
+        {
+            isTouchingWall = Physics2D.OverlapCircle(
+                wallCheck.position,
+                wallCheckRadius,
+                groundLayer
+            );
+        }
+
+        bool isPushingTowardWall = horizontalInput != 0f;
+
+        IsWallSliding =
+            isTouchingWall &&
+            !IsGrounded &&
+            isPushingTowardWall &&
+            !isDashing;
+
+        if (playerAnimation != null)
+        {
+            playerAnimation.SetWallSliding(IsWallSliding);
+        }
+    }
+
     private void StartDash()
     {
         isDashing = true;
+        IsWallSliding = false;
+
+        if (playerAnimation != null)
+        {
+            playerAnimation.SetWallSliding(false);
+        }
+
         dashTimer = dashDuration;
         nextDashTime = Time.time + dashCooldown;
 
@@ -153,14 +220,14 @@ public class PlayerMovement2D : MonoBehaviour
 
         rb.linearVelocity = new Vector2(dashDirection * dashSpeed, 0f);
 
-        if (playerAnimation != null)
-        {
-            playerAnimation.PlayDash();
-        }
-
         if (playerHealth != null)
         {
             playerHealth.SetInvulnerable(true);
+        }
+
+        if (playerAnimation != null)
+        {
+            playerAnimation.PlayDash();
         }
     }
 
@@ -184,11 +251,14 @@ public class PlayerMovement2D : MonoBehaviour
 
     private void OnDrawGizmosSelected()
     {
-        if (groundCheck == null)
+        if (groundCheck != null)
         {
-            return;
+            Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
         }
 
-        Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
+        if (wallCheck != null)
+        {
+            Gizmos.DrawWireSphere(wallCheck.position, wallCheckRadius);
+        }
     }
 }
