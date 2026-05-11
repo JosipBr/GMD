@@ -18,9 +18,13 @@ public class RoundManager2D : MonoBehaviour
     [Header("UI")]
     [SerializeField] private TMP_Text scoreText;
     [SerializeField] private TMP_Text roundMessageText;
+    [SerializeField] private GameObject scorePanel;
+    [SerializeField] private GameObject roundMessagePanel;
 
     [Header("Round Settings")]
     [SerializeField] private float roundResetDelay = 2f;
+    [SerializeField] private float readyMessageDuration = 1.2f;
+    [SerializeField] private float fightMessageDuration = 0.6f;
 
     [Header("Weapons")]
     [SerializeField] private WeaponSpawner2D weaponSpawner;
@@ -29,6 +33,7 @@ public class RoundManager2D : MonoBehaviour
     private int player2Score;
     private bool isRoundEnding;
     private Arena2D currentArena;
+    private Coroutine roundRoutine;
 
     private void OnEnable()
     {
@@ -51,7 +56,8 @@ public class RoundManager2D : MonoBehaviour
 
         UpdateScoreText();
         ClearRoundMessage();
-        ResetRound();
+
+        roundRoutine = StartCoroutine(StartRoundWithIntro(loadNextArena: false));
     }
 
     private void Update()
@@ -76,6 +82,8 @@ public class RoundManager2D : MonoBehaviour
             weaponSpawner.StopSpawning();
         }
 
+        AudioManager2D.Instance?.PlayRoundWin();
+
         if (deadPlayer == player1Health)
         {
             player2Score++;
@@ -89,7 +97,7 @@ public class RoundManager2D : MonoBehaviour
 
         UpdateScoreText();
 
-        StartCoroutine(ResetRoundAfterDelay());
+        roundRoutine = StartCoroutine(ResetRoundAfterDelay());
     }
 
     private IEnumerator ResetRoundAfterDelay()
@@ -98,17 +106,33 @@ public class RoundManager2D : MonoBehaviour
 
         yield return new WaitForSeconds(roundResetDelay);
 
-        if (arenaManager != null)
+        roundRoutine = StartCoroutine(StartRoundWithIntro(loadNextArena: true));
+    }
+
+    private IEnumerator StartRoundWithIntro(bool loadNextArena)
+    {
+        SetPlayersEnabled(false);
+
+        if (loadNextArena && arenaManager != null)
         {
             currentArena = arenaManager.LoadNextArena();
         }
 
         ResetRound();
-        ClearRoundMessage();
 
+        AudioManager2D.Instance?.PlayReadyFight();
+
+        ShowRoundMessage("READY...");
+        yield return new WaitForSeconds(readyMessageDuration);
+
+        ShowRoundMessage("FIGHT!");
+        yield return new WaitForSeconds(fightMessageDuration);
+
+        ClearRoundMessage();
         SetPlayersEnabled(true);
 
         isRoundEnding = false;
+        roundRoutine = null;
     }
 
     private void ResetRound()
@@ -139,16 +163,25 @@ public class RoundManager2D : MonoBehaviour
 
     private void ResetMatch()
     {
+        if (roundRoutine != null)
+        {
+            StopCoroutine(roundRoutine);
+            roundRoutine = null;
+        }
+
         player1Score = 0;
         player2Score = 0;
+        isRoundEnding = false;
+
+        if (arenaManager != null)
+        {
+            currentArena = arenaManager.LoadFirstArena();
+        }
 
         UpdateScoreText();
         ClearRoundMessage();
-        ResetRound();
 
-        isRoundEnding = false;
-
-        SetPlayersEnabled(true);
+        roundRoutine = StartCoroutine(StartRoundWithIntro(loadNextArena: false));
 
         Debug.Log("Match reset.");
     }
@@ -195,6 +228,11 @@ public class RoundManager2D : MonoBehaviour
 
     private void ShowRoundMessage(string message)
     {
+        if (roundMessagePanel != null)
+        {
+            roundMessagePanel.SetActive(true);
+        }
+
         if (roundMessageText != null)
         {
             roundMessageText.text = message;
@@ -206,6 +244,11 @@ public class RoundManager2D : MonoBehaviour
         if (roundMessageText != null)
         {
             roundMessageText.text = "";
+        }
+
+        if (roundMessagePanel != null)
+        {
+            roundMessagePanel.SetActive(false);
         }
     }
 

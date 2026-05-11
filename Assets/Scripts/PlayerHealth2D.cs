@@ -115,6 +115,8 @@ public class PlayerHealth2D : MonoBehaviour
 
         Debug.Log($"{gameObject.name} died.");
 
+        AudioManager2D.Instance?.PlayDeath();
+
         if (playDeathAnimation && playerAnimation != null)
         {
             playerAnimation.PlayDeath();

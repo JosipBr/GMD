@@ -64,6 +64,9 @@ public class PlayerMovement2D : MonoBehaviour
     private bool isClimbingLedge;
     private float originalGravityScale;
 
+    private bool hasCheckedGrounded;
+    private bool wasGroundedLastFixedUpdate;
+
     public bool IsGrounded { get; private set; }
     public bool IsWallSliding { get; private set; }
 
@@ -88,6 +91,8 @@ public class PlayerMovement2D : MonoBehaviour
     {
         isDashing = false;
         IsWallSliding = false;
+        hasCheckedGrounded = false;
+        wasGroundedLastFixedUpdate = false;
 
         if (playerHealth != null)
         {
@@ -136,13 +141,15 @@ public class PlayerMovement2D : MonoBehaviour
         }
     }
 
-   private void FixedUpdate()
+    private void FixedUpdate()
     {
         IsGrounded = Physics2D.OverlapCircle(
             groundCheck.position,
             groundCheckRadius,
             groundLayer
         );
+
+        HandleLandingSound();
 
         if (isClimbingLedge)
         {
@@ -190,6 +197,8 @@ public class PlayerMovement2D : MonoBehaviour
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             jumpsRemaining--;
 
+            AudioManager2D.Instance?.PlayJump();
+
             if (isDoubleJump && playerAnimation != null)
             {
                 playerAnimation.PlayDoubleJump();
@@ -205,7 +214,28 @@ public class PlayerMovement2D : MonoBehaviour
         dashPressed = false;
     }
 
-   private void UpdateWallSlide()
+    private void HandleLandingSound()
+    {
+        bool playerIsAlive = playerHealth == null || !playerHealth.IsDead;
+
+        bool justLanded =
+            hasCheckedGrounded &&
+            !wasGroundedLastFixedUpdate &&
+            IsGrounded &&
+            rb.linearVelocity.y <= 0.1f &&
+            !isClimbingLedge &&
+            playerIsAlive;
+
+        if (justLanded)
+        {
+            AudioManager2D.Instance?.PlayLanding();
+        }
+
+        wasGroundedLastFixedUpdate = IsGrounded;
+        hasCheckedGrounded = true;
+    }
+
+    private void UpdateWallSlide()
     {
         bool isTouchingWall = false;
 
@@ -237,6 +267,8 @@ public class PlayerMovement2D : MonoBehaviour
     {
         isDashing = true;
         IsWallSliding = false;
+
+        AudioManager2D.Instance?.PlayDash();
 
         if (playerAnimation != null)
         {
@@ -308,46 +340,46 @@ public class PlayerMovement2D : MonoBehaviour
     }
 
     private bool TryStartLedgeClimb()
+    {
+        if (isClimbingLedge || isDashing || IsGrounded)
         {
-            if (isClimbingLedge || isDashing || IsGrounded)
-            {
-                return false;
-            }
-
-            if (wallCheck == null || ledgeCheck == null)
-            {
-                return false;
-            }
-
-            bool isTouchingWall = Physics2D.OverlapBox(
-                wallCheck.position,
-                wallCheckSize,
-                0f,
-                groundLayer
-            );
-
-            bool isLedgeBlocked = Physics2D.OverlapBox(
-                ledgeCheck.position,
-                ledgeCheckSize,
-                0f,
-                groundLayer
-            );
-
-            bool isPushingTowardWall = horizontalInput != 0f;
-
-            if (!isTouchingWall || isLedgeBlocked || !isPushingTowardWall)
-            {
-                return false;
-            }
-
-            if (!TryGetLedgeStandPosition(out Vector3 standPosition))
-            {
-                return false;
-            }
-
-            StartCoroutine(ClimbLedge(standPosition));
-            return true;
+            return false;
         }
+
+        if (wallCheck == null || ledgeCheck == null)
+        {
+            return false;
+        }
+
+        bool isTouchingWall = Physics2D.OverlapBox(
+            wallCheck.position,
+            wallCheckSize,
+            0f,
+            groundLayer
+        );
+
+        bool isLedgeBlocked = Physics2D.OverlapBox(
+            ledgeCheck.position,
+            ledgeCheckSize,
+            0f,
+            groundLayer
+        );
+
+        bool isPushingTowardWall = horizontalInput != 0f;
+
+        if (!isTouchingWall || isLedgeBlocked || !isPushingTowardWall)
+        {
+            return false;
+        }
+
+        if (!TryGetLedgeStandPosition(out Vector3 standPosition))
+        {
+            return false;
+        }
+
+        StartCoroutine(ClimbLedge(standPosition));
+        return true;
+    }
 
     private bool TryGetLedgeStandPosition(out Vector3 standPosition)
     {
@@ -390,39 +422,39 @@ public class PlayerMovement2D : MonoBehaviour
     }
 
     private IEnumerator ClimbLedge(Vector3 standPosition)
+    {
+        isClimbingLedge = true;
+        IsWallSliding = false;
+
+        rb.linearVelocity = Vector2.zero;
+        rb.gravityScale = 0f;
+
+        if (playerAnimation != null)
         {
-            isClimbingLedge = true;
-            IsWallSliding = false;
-
-            rb.linearVelocity = Vector2.zero;
-            rb.gravityScale = 0f;
-
-            if (playerAnimation != null)
-            {
-                playerAnimation.SetWallSliding(false);
-                playerAnimation.PlayLedgeClimb();
-            }
-
-            Vector3 startPosition = transform.position;
-            float elapsed = 0f;
-
-            while (elapsed < ledgeClimbDuration)
-            {
-                elapsed += Time.deltaTime;
-
-                float t = elapsed / ledgeClimbDuration;
-                transform.position = Vector3.Lerp(startPosition, standPosition, t);
-
-                rb.linearVelocity = Vector2.zero;
-
-                yield return null;
-            }
-
-            transform.position = standPosition;
-            rb.gravityScale = originalGravityScale;
-            rb.linearVelocity = Vector2.zero;
-
-            jumpsRemaining = maxJumpCount;
-            isClimbingLedge = false;
+            playerAnimation.SetWallSliding(false);
+            playerAnimation.PlayLedgeClimb();
         }
+
+        Vector3 startPosition = transform.position;
+        float elapsed = 0f;
+
+        while (elapsed < ledgeClimbDuration)
+        {
+            elapsed += Time.deltaTime;
+
+            float t = elapsed / ledgeClimbDuration;
+            transform.position = Vector3.Lerp(startPosition, standPosition, t);
+
+            rb.linearVelocity = Vector2.zero;
+
+            yield return null;
+        }
+
+        transform.position = standPosition;
+        rb.gravityScale = originalGravityScale;
+        rb.linearVelocity = Vector2.zero;
+
+        jumpsRemaining = maxJumpCount;
+        isClimbingLedge = false;
+    }
 }

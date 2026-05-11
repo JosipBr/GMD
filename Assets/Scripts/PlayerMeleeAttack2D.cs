@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 public class PlayerMeleeAttack2D : MonoBehaviour
@@ -21,6 +22,7 @@ public class PlayerMeleeAttack2D : MonoBehaviour
     private WeaponUseAnimation2D equippedWeaponUseAnimation;
 
     private bool HasGun => equippedWeapon != null && equippedWeapon.WeaponType == WeaponType2D.Gun;
+    private bool HasMeleeWeapon => equippedWeapon != null && equippedWeapon.WeaponType == WeaponType2D.Melee;
 
     private float CurrentAttackRange => equippedWeapon != null ? equippedWeapon.AttackRange : baseAttackRange;
     private int CurrentDamage => equippedWeapon != null ? equippedWeapon.Damage : baseDamage;
@@ -49,6 +51,11 @@ public class PlayerMeleeAttack2D : MonoBehaviour
                     playerAnimation.PlayAttack();
                 }
 
+                if (HasMeleeWeapon)
+                {
+                    AudioManager2D.Instance?.PlayKnifeSwing();
+                }
+
                 MeleeAttack();
             }
 
@@ -70,6 +77,8 @@ public class PlayerMeleeAttack2D : MonoBehaviour
 
         equippedWeapon = weapon;
         equippedWeapon.AttachTo(transform, weaponHoldPoint);
+
+        AudioManager2D.Instance?.PlayPickup();
 
         equippedWeaponUseAnimation = equippedWeapon.GetComponentInChildren<WeaponUseAnimation2D>();
 
@@ -119,6 +128,9 @@ public class PlayerMeleeAttack2D : MonoBehaviour
             playerLayer
         );
 
+        HashSet<PlayerHealth2D> damagedPlayers = new HashSet<PlayerHealth2D>();
+        bool didHitPlayer = false;
+
         foreach (Collider2D hit in hits)
         {
             if (hit.transform.root == transform.root)
@@ -128,13 +140,22 @@ public class PlayerMeleeAttack2D : MonoBehaviour
 
             PlayerHealth2D health = hit.GetComponentInParent<PlayerHealth2D>();
 
-            if (health == null)
+            if (health == null || damagedPlayers.Contains(health))
             {
                 continue;
             }
 
+            damagedPlayers.Add(health);
+
             Vector2 knockbackDirection = hit.transform.position - transform.position;
             health.TakeDamage(CurrentDamage, knockbackDirection, CurrentKnockbackForce);
+
+            didHitPlayer = true;
+        }
+
+        if (didHitPlayer)
+        {
+            AudioManager2D.Instance?.PlayPunchImpact();
         }
     }
 
@@ -145,6 +166,8 @@ public class PlayerMeleeAttack2D : MonoBehaviour
             Debug.LogWarning($"{equippedWeapon.gameObject.name} is missing a projectile prefab.");
             return;
         }
+
+        AudioManager2D.Instance?.PlayGunShot();
 
         Vector2 shootDirection = transform.localScale.x >= 0 ? Vector2.right : Vector2.left;
 
