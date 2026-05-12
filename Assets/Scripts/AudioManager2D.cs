@@ -23,6 +23,14 @@ public class AudioManager2D : MonoBehaviour
     [SerializeField] private AudioClip readyFightClip;
     [SerializeField] private AudioClip roundWinClip;
 
+    [Header("Menu")]
+    [SerializeField] private AudioClip menuMoveClip;
+    [SerializeField] private AudioClip menuSelectClip;
+    [SerializeField] private AudioClip menuBackClip;
+    [SerializeField] private AudioClip pauseClip;
+    [SerializeField] private AudioClip gameStartClip;
+    [SerializeField] private AudioClip pressStartClip;
+
     [Header("Settings")]
     [Range(0f, 1f)]
     [SerializeField] private float masterVolume = 0.55f;
@@ -91,6 +99,36 @@ public class AudioManager2D : MonoBehaviour
     public void PlayRoundWin()
     {
         PlayClip(roundWinClip, 0.65f, usePitchVariation: false);
+    }
+
+    public void PlayMenuMove()
+    {
+        PlayClip(menuMoveClip, 0.35f, usePitchVariation: false);
+    }
+
+    public void PlayMenuSelect()
+    {
+        PlayClip(menuSelectClip, 0.45f, usePitchVariation: false);
+    }
+
+    public void PlayMenuBack()
+    {
+        PlayClip(menuBackClip, 0.45f, usePitchVariation: false);
+    }
+
+    public void PlayPause()
+    {
+        PlayClip(pauseClip, 0.5f, usePitchVariation: false);
+    }
+
+    public void PlayGameStart()
+    {
+        PlayClip(gameStartClip, 0.65f, usePitchVariation: false);
+    }
+
+    public void PlayPressStart()
+    {
+        PlayClip(pressStartClip, 0.55f, usePitchVariation: false);
     }
 
     private void PlayClip(AudioClip clip, float volume, bool usePitchVariation = true)

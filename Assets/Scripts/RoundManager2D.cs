@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using TMPro;
 using UnityEngine;
@@ -23,6 +24,8 @@ public class RoundManager2D : MonoBehaviour
 
     [Header("Round Settings")]
     [SerializeField] private float roundResetDelay = 2f;
+    [SerializeField] private float matchEndDelay = 3f;
+    [SerializeField] private float matchStartDelay = 0.5f;
     [SerializeField] private float readyMessageDuration = 1.2f;
     [SerializeField] private float fightMessageDuration = 0.6f;
 
@@ -31,9 +34,14 @@ public class RoundManager2D : MonoBehaviour
 
     private int player1Score;
     private int player2Score;
+    private int matchWinTarget = 3;
+
     private bool isRoundEnding;
+    private bool matchStarted;
     private Arena2D currentArena;
     private Coroutine roundRoutine;
+
+    public event Action OnMatchEnded;
 
     private void OnEnable()
     {
@@ -54,23 +62,108 @@ public class RoundManager2D : MonoBehaviour
             currentArena = arenaManager.LoadFirstArena();
         }
 
+        player1Score = 0;
+        player2Score = 0;
+
         UpdateScoreText();
         ClearRoundMessage();
 
-        roundRoutine = StartCoroutine(StartRoundWithIntro(loadNextArena: false));
+        if (weaponSpawner != null)
+        {
+            weaponSpawner.StopSpawning();
+        }
+
+        PreparePlayersForMenu();
+        SetPlayersEnabled(false);
+
+        matchStarted = false;
+        isRoundEnding = false;
     }
 
     private void Update()
     {
+        if (!matchStarted)
+        {
+            return;
+        }
+
         if (Input.GetKeyDown(KeyCode.R))
         {
             ResetMatch();
         }
     }
 
+    public void SetMatchWinTarget(int newMatchWinTarget)
+    {
+        matchWinTarget = Mathf.Max(0, newMatchWinTarget);
+
+        Debug.Log(matchWinTarget <= 0
+            ? "Match mode set to endless."
+            : $"Match mode set to first to {matchWinTarget}.");
+    }
+
+    public void StartMatchFromMenu()
+    {
+        StopCurrentRoundRoutine();
+
+        matchStarted = true;
+        isRoundEnding = false;
+
+        player1Score = 0;
+        player2Score = 0;
+
+        UpdateScoreText();
+        ClearRoundMessage();
+
+        if (weaponSpawner != null)
+        {
+            weaponSpawner.StopSpawning();
+        }
+
+        if (arenaManager != null)
+        {
+            currentArena = arenaManager.LoadFirstArena();
+        }
+
+        roundRoutine = StartCoroutine(StartMatchRoutine());
+    }
+
+    public void StopMatchForMenu()
+    {
+        StopCurrentRoundRoutine();
+
+        matchStarted = false;
+        isRoundEnding = false;
+
+        if (weaponSpawner != null)
+        {
+            weaponSpawner.StopSpawning();
+        }
+
+        ClearRoundMessage();
+        PreparePlayersForMenu();
+        SetPlayersEnabled(false);
+    }
+
+    private IEnumerator StartMatchRoutine()
+    {
+        SetPlayersEnabled(false);
+
+        ResetRound();
+
+        if (matchStartDelay > 0f)
+        {
+            yield return new WaitForSeconds(matchStartDelay);
+        }
+
+        yield return StartRoundIntroOnly();
+
+        roundRoutine = null;
+    }
+
     private void HandlePlayerDied(PlayerHealth2D deadPlayer)
     {
-        if (isRoundEnding)
+        if (!matchStarted || isRoundEnding)
         {
             return;
         }
@@ -84,20 +177,71 @@ public class RoundManager2D : MonoBehaviour
 
         AudioManager2D.Instance?.PlayRoundWin();
 
+        PlayerHealth2D roundWinner = null;
+
         if (deadPlayer == player1Health)
         {
             player2Score++;
-            ShowRoundMessage("Player 2 wins the round!");
+            roundWinner = player2Health;
         }
         else if (deadPlayer == player2Health)
         {
             player1Score++;
-            ShowRoundMessage("Player 1 wins the round!");
+            roundWinner = player1Health;
         }
 
         UpdateScoreText();
 
-        roundRoutine = StartCoroutine(ResetRoundAfterDelay());
+        bool matchWon = HasPlayerWonMatch(roundWinner);
+
+        StopCurrentRoundRoutine();
+
+        if (matchWon)
+        {
+            if (roundWinner == player1Health)
+            {
+                ShowRoundMessage("PLAYER 1 WINS THE MATCH!");
+            }
+            else if (roundWinner == player2Health)
+            {
+                ShowRoundMessage("PLAYER 2 WINS THE MATCH!");
+            }
+
+            roundRoutine = StartCoroutine(EndMatchAfterDelay());
+        }
+        else
+        {
+            if (deadPlayer == player1Health)
+            {
+                ShowRoundMessage("Player 2 wins the round!");
+            }
+            else if (deadPlayer == player2Health)
+            {
+                ShowRoundMessage("Player 1 wins the round!");
+            }
+
+            roundRoutine = StartCoroutine(ResetRoundAfterDelay());
+        }
+    }
+
+    private bool HasPlayerWonMatch(PlayerHealth2D playerHealth)
+    {
+        if (matchWinTarget <= 0 || playerHealth == null)
+        {
+            return false;
+        }
+
+        if (playerHealth == player1Health)
+        {
+            return player1Score >= matchWinTarget;
+        }
+
+        if (playerHealth == player2Health)
+        {
+            return player2Score >= matchWinTarget;
+        }
+
+        return false;
     }
 
     private IEnumerator ResetRoundAfterDelay()
@@ -106,7 +250,27 @@ public class RoundManager2D : MonoBehaviour
 
         yield return new WaitForSeconds(roundResetDelay);
 
-        roundRoutine = StartCoroutine(StartRoundWithIntro(loadNextArena: true));
+        yield return StartRoundWithIntro(loadNextArena: true);
+
+        roundRoutine = null;
+    }
+
+    private IEnumerator EndMatchAfterDelay()
+    {
+        SetPlayersEnabled(false);
+
+        if (weaponSpawner != null)
+        {
+            weaponSpawner.StopSpawning();
+        }
+
+        yield return new WaitForSeconds(matchEndDelay);
+
+        matchStarted = false;
+        isRoundEnding = false;
+        roundRoutine = null;
+
+        OnMatchEnded?.Invoke();
     }
 
     private IEnumerator StartRoundWithIntro(bool loadNextArena)
@@ -120,6 +284,11 @@ public class RoundManager2D : MonoBehaviour
 
         ResetRound();
 
+        yield return StartRoundIntroOnly();
+    }
+
+    private IEnumerator StartRoundIntroOnly()
+    {
         AudioManager2D.Instance?.PlayReadyFight();
 
         ShowRoundMessage("READY...");
@@ -132,7 +301,6 @@ public class RoundManager2D : MonoBehaviour
         SetPlayersEnabled(true);
 
         isRoundEnding = false;
-        roundRoutine = null;
     }
 
     private void ResetRound()
@@ -163,37 +331,45 @@ public class RoundManager2D : MonoBehaviour
 
     private void ResetMatch()
     {
-        if (roundRoutine != null)
-        {
-            StopCoroutine(roundRoutine);
-            roundRoutine = null;
-        }
-
-        player1Score = 0;
-        player2Score = 0;
-        isRoundEnding = false;
-
-        if (arenaManager != null)
-        {
-            currentArena = arenaManager.LoadFirstArena();
-        }
-
-        UpdateScoreText();
-        ClearRoundMessage();
-
-        roundRoutine = StartCoroutine(StartRoundWithIntro(loadNextArena: false));
+        StartMatchFromMenu();
 
         Debug.Log("Match reset.");
     }
 
+    private void PreparePlayersForMenu()
+    {
+        if (currentArena == null)
+        {
+            return;
+        }
+
+        ResetPlayerWeapon(player1Health);
+        ResetPlayerWeapon(player2Health);
+
+        ResetPlayer(player1Health, currentArena.Player1SpawnPoint);
+        ResetPlayer(player2Health, currentArena.Player2SpawnPoint);
+
+        player1Health.ResetHealth();
+        player2Health.ResetHealth();
+    }
+
     private void ResetPlayer(PlayerHealth2D playerHealth, Transform spawnPoint)
     {
+        if (playerHealth == null || spawnPoint == null)
+        {
+            return;
+        }
+
         Transform playerTransform = playerHealth.transform;
         Rigidbody2D rb = playerHealth.GetComponent<Rigidbody2D>();
 
         playerTransform.position = spawnPoint.position;
-        rb.linearVelocity = Vector2.zero;
-        rb.angularVelocity = 0f;
+
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+        }
     }
 
     private void SetPlayersEnabled(bool enabled)
@@ -204,6 +380,11 @@ public class RoundManager2D : MonoBehaviour
 
     private void SetPlayerEnabled(PlayerHealth2D playerHealth, bool enabled)
     {
+        if (playerHealth == null)
+        {
+            return;
+        }
+
         PlayerMovement2D movement = playerHealth.GetComponent<PlayerMovement2D>();
         PlayerMeleeAttack2D attack = playerHealth.GetComponent<PlayerMeleeAttack2D>();
 
@@ -254,11 +435,25 @@ public class RoundManager2D : MonoBehaviour
 
     private void ResetPlayerWeapon(PlayerHealth2D playerHealth)
     {
+        if (playerHealth == null)
+        {
+            return;
+        }
+
         PlayerMeleeAttack2D attack = playerHealth.GetComponent<PlayerMeleeAttack2D>();
 
         if (attack != null)
         {
             attack.ResetWeapon();
+        }
+    }
+
+    private void StopCurrentRoundRoutine()
+    {
+        if (roundRoutine != null)
+        {
+            StopCoroutine(roundRoutine);
+            roundRoutine = null;
         }
     }
 }
