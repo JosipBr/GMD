@@ -27,7 +27,6 @@ public class WeaponSpawner2D : MonoBehaviour
     public void StartSpawningForRound()
     {
         StopSpawning();
-        ClearSpawnedWeapons();
 
         spawnRoutine = StartCoroutine(SpawnLoop());
     }
@@ -41,6 +40,24 @@ public class WeaponSpawner2D : MonoBehaviour
 
         StopCoroutine(spawnRoutine);
         spawnRoutine = null;
+    }
+
+    public void ClearSpawnedWeapons()
+    {
+        foreach (WeaponPickup2D weapon in spawnedWeapons)
+        {
+            if (weapon != null)
+            {
+                Destroy(weapon.gameObject);
+            }
+        }
+
+        spawnedWeapons.Clear();
+    }
+
+    public void SetSpawnPoints(Transform[] newSpawnPoints)
+    {
+        spawnPoints = newSpawnPoints;
     }
 
     private IEnumerator SpawnLoop()
@@ -118,26 +135,8 @@ public class WeaponSpawner2D : MonoBehaviour
         }
     }
 
-    private void ClearSpawnedWeapons()
-    {
-        foreach (WeaponPickup2D weapon in spawnedWeapons)
-        {
-            if (weapon != null)
-            {
-                Destroy(weapon.gameObject);
-            }
-        }
-
-        spawnedWeapons.Clear();
-    }
-
     private void RemoveMissingWeapons()
     {
         spawnedWeapons.RemoveAll(weapon => weapon == null);
-    }
-
-    public void SetSpawnPoints(Transform[] newSpawnPoints)
-    {
-        spawnPoints = newSpawnPoints;
     }
 }

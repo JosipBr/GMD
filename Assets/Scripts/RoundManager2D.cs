@@ -71,6 +71,7 @@ public class RoundManager2D : MonoBehaviour
         if (weaponSpawner != null)
         {
             weaponSpawner.StopSpawning();
+            weaponSpawner.ClearSpawnedWeapons();
         }
 
         PreparePlayersForMenu();
@@ -118,6 +119,7 @@ public class RoundManager2D : MonoBehaviour
         if (weaponSpawner != null)
         {
             weaponSpawner.StopSpawning();
+            weaponSpawner.ClearSpawnedWeapons();
         }
 
         if (arenaManager != null)
@@ -138,6 +140,7 @@ public class RoundManager2D : MonoBehaviour
         if (weaponSpawner != null)
         {
             weaponSpawner.StopSpawning();
+            weaponSpawner.ClearSpawnedWeapons();
         }
 
         ClearRoundMessage();
@@ -300,6 +303,11 @@ public class RoundManager2D : MonoBehaviour
         ClearRoundMessage();
         SetPlayersEnabled(true);
 
+        if (weaponSpawner != null)
+        {
+            weaponSpawner.StartSpawningForRound();
+        }
+
         isRoundEnding = false;
     }
 
@@ -311,13 +319,18 @@ public class RoundManager2D : MonoBehaviour
             return;
         }
 
+        if (weaponSpawner != null)
+        {
+            weaponSpawner.StopSpawning();
+        }
+
         ResetPlayerWeapon(player1Health);
         ResetPlayerWeapon(player2Health);
 
         if (weaponSpawner != null)
         {
+            weaponSpawner.ClearSpawnedWeapons();
             weaponSpawner.SetSpawnPoints(currentArena.WeaponSpawnPoints);
-            weaponSpawner.StartSpawningForRound();
         }
 
         ResetPlayer(player1Health, currentArena.Player1SpawnPoint);
@@ -345,6 +358,11 @@ public class RoundManager2D : MonoBehaviour
 
         ResetPlayerWeapon(player1Health);
         ResetPlayerWeapon(player2Health);
+
+        if (weaponSpawner != null)
+        {
+            weaponSpawner.ClearSpawnedWeapons();
+        }
 
         ResetPlayer(player1Health, currentArena.Player1SpawnPoint);
         ResetPlayer(player2Health, currentArena.Player2SpawnPoint);

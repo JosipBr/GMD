@@ -31,6 +31,12 @@ public class PlayerMeleeAttack2D : MonoBehaviour
 
     private void Update()
     {
+
+        if (Time.timeScale == 0f)
+        {
+            return;
+        }
+        
         if (Input.GetKeyDown(attackKey) && Time.time >= nextAttackTime)
         {
             PlayEquippedWeaponUseAnimation();

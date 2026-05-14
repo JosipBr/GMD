@@ -107,6 +107,15 @@ public class PlayerMovement2D : MonoBehaviour
 
     private void Update()
     {
+
+        if (Time.timeScale == 0f)
+            {
+                horizontalInput = 0f;
+                jumpPressed = false;
+                dashPressed = false;
+                return;
+            }
+
         horizontalInput = 0f;
 
         if (Input.GetKey(leftKey))
