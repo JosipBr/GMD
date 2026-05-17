@@ -21,8 +21,20 @@ public class WeaponSpawner2D : MonoBehaviour
     [SerializeField] private float spawnHeight = 3f;
     [SerializeField] private float dropSpeed = 2f;
 
-    private readonly List<WeaponPickup2D> spawnedWeapons = new();
+    private readonly List<SpawnedWeaponInfo> spawnedWeapons = new();
     private Coroutine spawnRoutine;
+
+    private class SpawnedWeaponInfo
+    {
+        public WeaponPickup2D Weapon { get; }
+        public Transform SpawnPoint { get; }
+
+        public SpawnedWeaponInfo(WeaponPickup2D weapon, Transform spawnPoint)
+        {
+            Weapon = weapon;
+            SpawnPoint = spawnPoint;
+        }
+    }
 
     public void StartSpawningForRound()
     {
@@ -44,11 +56,11 @@ public class WeaponSpawner2D : MonoBehaviour
 
     public void ClearSpawnedWeapons()
     {
-        foreach (WeaponPickup2D weapon in spawnedWeapons)
+        foreach (SpawnedWeaponInfo spawnedWeapon in spawnedWeapons)
         {
-            if (weapon != null)
+            if (spawnedWeapon != null && spawnedWeapon.Weapon != null)
             {
-                Destroy(weapon.gameObject);
+                Destroy(spawnedWeapon.Weapon.gameObject);
             }
         }
 
@@ -92,8 +104,16 @@ public class WeaponSpawner2D : MonoBehaviour
             return;
         }
 
+        List<Transform> availableSpawnPoints = GetAvailableSpawnPoints();
+
+        if (availableSpawnPoints.Count == 0)
+        {
+            Debug.Log("No free weapon spawn points available.");
+            return;
+        }
+
         WeaponPickup2D weaponPrefab = weaponPrefabs[Random.Range(0, weaponPrefabs.Length)];
-        Transform spawnPoint = spawnPoints[Random.Range(0, spawnPoints.Length)];
+        Transform spawnPoint = availableSpawnPoints[Random.Range(0, availableSpawnPoints.Count)];
 
         Vector3 targetPosition = spawnPoint.position;
         Vector3 startPosition = targetPosition + Vector3.up * spawnHeight;
@@ -110,9 +130,52 @@ public class WeaponSpawner2D : MonoBehaviour
             spawnedWeapon.transform.localScale
         );
 
-        spawnedWeapons.Add(spawnedWeapon);
+        spawnedWeapons.Add(new SpawnedWeaponInfo(spawnedWeapon, spawnPoint));
 
         StartCoroutine(DropWeaponToPoint(spawnedWeapon, targetPosition));
+    }
+
+    private List<Transform> GetAvailableSpawnPoints()
+    {
+        List<Transform> availableSpawnPoints = new();
+
+        foreach (Transform spawnPoint in spawnPoints)
+        {
+            if (spawnPoint == null)
+            {
+                continue;
+            }
+
+            if (!IsSpawnPointOccupied(spawnPoint))
+            {
+                availableSpawnPoints.Add(spawnPoint);
+            }
+        }
+
+        return availableSpawnPoints;
+    }
+
+    private bool IsSpawnPointOccupied(Transform spawnPoint)
+    {
+        foreach (SpawnedWeaponInfo spawnedWeapon in spawnedWeapons)
+        {
+            if (spawnedWeapon == null || spawnedWeapon.Weapon == null)
+            {
+                continue;
+            }
+
+            if (spawnedWeapon.Weapon.IsEquipped)
+            {
+                continue;
+            }
+
+            if (spawnedWeapon.SpawnPoint == spawnPoint)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private IEnumerator DropWeaponToPoint(WeaponPickup2D weapon, Vector3 targetPosition)
@@ -137,6 +200,9 @@ public class WeaponSpawner2D : MonoBehaviour
 
     private void RemoveMissingWeapons()
     {
-        spawnedWeapons.RemoveAll(weapon => weapon == null);
+        spawnedWeapons.RemoveAll(spawnedWeapon =>
+            spawnedWeapon == null ||
+            spawnedWeapon.Weapon == null
+        );
     }
 }
