@@ -67,6 +67,8 @@ public class PlayerMovement2D : MonoBehaviour
     private bool hasCheckedGrounded;
     private bool wasGroundedLastFixedUpdate;
 
+    private float knockbackControlLockTimer;
+
     public bool IsGrounded { get; private set; }
     public bool IsWallSliding { get; private set; }
 
@@ -93,6 +95,7 @@ public class PlayerMovement2D : MonoBehaviour
         IsWallSliding = false;
         hasCheckedGrounded = false;
         wasGroundedLastFixedUpdate = false;
+        knockbackControlLockTimer = 0f;
 
         if (playerHealth != null)
         {
@@ -107,14 +110,21 @@ public class PlayerMovement2D : MonoBehaviour
 
     private void Update()
     {
-
         if (Time.timeScale == 0f)
-            {
-                horizontalInput = 0f;
-                jumpPressed = false;
-                dashPressed = false;
-                return;
-            }
+        {
+            horizontalInput = 0f;
+            jumpPressed = false;
+            dashPressed = false;
+            return;
+        }
+
+        if (knockbackControlLockTimer > 0f)
+        {
+            horizontalInput = 0f;
+            jumpPressed = false;
+            dashPressed = false;
+            return;
+        }
 
         horizontalInput = 0f;
 
@@ -159,6 +169,23 @@ public class PlayerMovement2D : MonoBehaviour
         );
 
         HandleLandingSound();
+
+        if (knockbackControlLockTimer > 0f)
+        {
+            knockbackControlLockTimer -= Time.fixedDeltaTime;
+
+            horizontalInput = 0f;
+            jumpPressed = false;
+            dashPressed = false;
+            IsWallSliding = false;
+
+            if (playerAnimation != null)
+            {
+                playerAnimation.SetWallSliding(false);
+            }
+
+            return;
+        }
 
         if (isClimbingLedge)
         {
@@ -221,6 +248,32 @@ public class PlayerMovement2D : MonoBehaviour
 
         jumpPressed = false;
         dashPressed = false;
+    }
+
+    public void LockMovementForKnockback(float duration)
+    {
+        knockbackControlLockTimer = Mathf.Max(knockbackControlLockTimer, duration);
+
+        horizontalInput = 0f;
+        jumpPressed = false;
+        dashPressed = false;
+
+        if (isDashing)
+        {
+            isDashing = false;
+        }
+
+        IsWallSliding = false;
+
+        if (playerHealth != null)
+        {
+            playerHealth.SetInvulnerable(false);
+        }
+
+        if (playerAnimation != null)
+        {
+            playerAnimation.SetWallSliding(false);
+        }
     }
 
     private void HandleLandingSound()

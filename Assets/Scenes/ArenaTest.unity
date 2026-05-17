@@ -2012,8 +2012,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth2D
   maxHealth: 100
-  knockbackMultiplier: 1.2
-  upwardKnockbackBias: 0.35
+  horizontalKnockbackMultiplier: 1.6
+  verticalKnockbackForce: 7
+  knockbackControlLockDuration: 0.22
   playerAnimation: {fileID: 1845234192}
   damageDeathRoundDelay: 0.6
 --- !u!114 &714851567
@@ -3775,8 +3776,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerHealth2D
   maxHealth: 100
-  knockbackMultiplier: 1.2
-  upwardKnockbackBias: 0.35
+  horizontalKnockbackMultiplier: 1.6
+  verticalKnockbackForce: 7
+  knockbackControlLockDuration: 0.22
   playerAnimation: {fileID: 1949135222}
   damageDeathRoundDelay: 0.6
 --- !u!114 &1096370183

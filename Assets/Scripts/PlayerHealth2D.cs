@@ -9,8 +9,9 @@ public class PlayerHealth2D : MonoBehaviour
     [SerializeField] private int maxHealth = 100;
 
     [Header("Knockback Feedback")]
-    [SerializeField] private float knockbackMultiplier = 1.2f;
-    [SerializeField] private float upwardKnockbackBias = 0.35f;
+    [SerializeField] private float horizontalKnockbackMultiplier = 2f;
+    [SerializeField] private float verticalKnockbackForce = 2f;
+    [SerializeField] private float knockbackControlLockDuration = 0.22f;
 
     [Header("Death Animation")]
     [SerializeField] private PlayerAnimation2D playerAnimation;
@@ -129,19 +130,27 @@ public class PlayerHealth2D : MonoBehaviour
             return;
         }
 
-        Vector2 direction = knockbackDirection.normalized;
+        float horizontalDirection = Mathf.Sign(knockbackDirection.x);
 
-        if (direction == Vector2.zero)
+        if (horizontalDirection == 0f)
         {
-            direction = transform.localScale.x >= 0 ? Vector2.left : Vector2.right;
+            horizontalDirection = transform.localScale.x >= 0 ? -1f : 1f;
         }
 
-        direction = new Vector2(
-            direction.x,
-            Mathf.Max(direction.y, upwardKnockbackBias)
-        ).normalized;
+        Vector2 force = new Vector2(
+            horizontalDirection * knockbackForce * horizontalKnockbackMultiplier,
+            verticalKnockbackForce
+        );
 
-        rb.AddForce(direction * knockbackForce * knockbackMultiplier, ForceMode2D.Impulse);
+        rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+        rb.AddForce(force, ForceMode2D.Impulse);
+
+        PlayerMovement2D movement = GetComponent<PlayerMovement2D>();
+
+        if (movement != null)
+        {
+            movement.LockMovementForKnockback(knockbackControlLockDuration);
+        }
     }
 
     private void Die(bool playDeathAnimation)

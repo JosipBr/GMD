@@ -38,6 +38,7 @@ public class RoundManager2D : MonoBehaviour
 
     private bool isRoundEnding;
     private bool matchStarted;
+    private bool hasLockedPlayersForDeath;
     private Arena2D currentArena;
     private Coroutine roundRoutine;
 
@@ -45,12 +46,18 @@ public class RoundManager2D : MonoBehaviour
 
     private void OnEnable()
     {
+        player1Health.OnDeathStarted += HandlePlayerDeathStarted;
+        player2Health.OnDeathStarted += HandlePlayerDeathStarted;
+
         player1Health.OnDied += HandlePlayerDied;
         player2Health.OnDied += HandlePlayerDied;
     }
 
     private void OnDisable()
     {
+        player1Health.OnDeathStarted -= HandlePlayerDeathStarted;
+        player2Health.OnDeathStarted -= HandlePlayerDeathStarted;
+
         player1Health.OnDied -= HandlePlayerDied;
         player2Health.OnDied -= HandlePlayerDied;
     }
@@ -79,6 +86,7 @@ public class RoundManager2D : MonoBehaviour
 
         matchStarted = false;
         isRoundEnding = false;
+        hasLockedPlayersForDeath = false;
     }
 
     private void Update()
@@ -109,6 +117,7 @@ public class RoundManager2D : MonoBehaviour
 
         matchStarted = true;
         isRoundEnding = false;
+        hasLockedPlayersForDeath = false;
 
         player1Score = 0;
         player2Score = 0;
@@ -136,6 +145,7 @@ public class RoundManager2D : MonoBehaviour
 
         matchStarted = false;
         isRoundEnding = false;
+        hasLockedPlayersForDeath = false;
 
         if (weaponSpawner != null)
         {
@@ -162,6 +172,25 @@ public class RoundManager2D : MonoBehaviour
         yield return StartRoundIntroOnly();
 
         roundRoutine = null;
+    }
+
+    private void HandlePlayerDeathStarted(PlayerHealth2D deadPlayer)
+    {
+        if (!matchStarted || hasLockedPlayersForDeath)
+        {
+            return;
+        }
+
+        hasLockedPlayersForDeath = true;
+
+        if (weaponSpawner != null)
+        {
+            weaponSpawner.StopSpawning();
+        }
+
+        SetPlayersEnabled(false);
+        StopPlayerPhysics(player1Health);
+        StopPlayerPhysics(player2Health);
     }
 
     private void HandlePlayerDied(PlayerHealth2D deadPlayer)
@@ -271,6 +300,7 @@ public class RoundManager2D : MonoBehaviour
 
         matchStarted = false;
         isRoundEnding = false;
+        hasLockedPlayersForDeath = false;
         roundRoutine = null;
 
         OnMatchEnded?.Invoke();
@@ -309,6 +339,7 @@ public class RoundManager2D : MonoBehaviour
         }
 
         isRoundEnding = false;
+        hasLockedPlayersForDeath = false;
     }
 
     private void ResetRound()
@@ -338,6 +369,9 @@ public class RoundManager2D : MonoBehaviour
 
         player1Health.ResetHealth();
         player2Health.ResetHealth();
+
+        isRoundEnding = false;
+        hasLockedPlayersForDeath = false;
 
         Debug.Log("Round reset.");
     }
@@ -414,6 +448,27 @@ public class RoundManager2D : MonoBehaviour
         if (attack != null)
         {
             attack.enabled = enabled;
+        }
+
+        if (!enabled)
+        {
+            StopPlayerPhysics(playerHealth);
+        }
+    }
+
+    private void StopPlayerPhysics(PlayerHealth2D playerHealth)
+    {
+        if (playerHealth == null)
+        {
+            return;
+        }
+
+        Rigidbody2D rb = playerHealth.GetComponent<Rigidbody2D>();
+
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
         }
     }
 
