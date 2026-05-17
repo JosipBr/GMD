@@ -8,6 +8,10 @@ public class PlayerHealth2D : MonoBehaviour
     [Header("Health")]
     [SerializeField] private int maxHealth = 100;
 
+    [Header("Knockback Feedback")]
+    [SerializeField] private float knockbackMultiplier = 1.2f;
+    [SerializeField] private float upwardKnockbackBias = 0.35f;
+
     [Header("Death Animation")]
     [SerializeField] private PlayerAnimation2D playerAnimation;
     [SerializeField] private float damageDeathRoundDelay = 0.6f;
@@ -23,7 +27,9 @@ public class PlayerHealth2D : MonoBehaviour
     public bool IsDead => isDead;
     public bool IsInvulnerable => isInvulnerable;
 
+    public event Action<PlayerHealth2D> OnDeathStarted;
     public event Action<PlayerHealth2D> OnDied;
+    public event Action<PlayerHealth2D> OnDamaged;
     public event Action<int, int> OnHealthChanged;
 
     private void Awake()
@@ -54,8 +60,9 @@ public class PlayerHealth2D : MonoBehaviour
         currentHealth -= damage;
         currentHealth = Mathf.Max(currentHealth, 0);
 
-        rb.AddForce(knockbackDirection.normalized * knockbackForce, ForceMode2D.Impulse);
+        ApplyKnockback(knockbackDirection, knockbackForce);
 
+        OnDamaged?.Invoke(this);
         OnHealthChanged?.Invoke(currentHealth, maxHealth);
 
         Debug.Log($"{gameObject.name} took {damage} damage. Health: {currentHealth}");
@@ -77,6 +84,12 @@ public class PlayerHealth2D : MonoBehaviour
         isDead = false;
         isInvulnerable = false;
         currentHealth = maxHealth;
+
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+        }
 
         if (playerAnimation != null)
         {
@@ -104,6 +117,33 @@ public class PlayerHealth2D : MonoBehaviour
         Die(playDeathAnimation);
     }
 
+    public void SetInvulnerable(bool invulnerable)
+    {
+        isInvulnerable = invulnerable;
+    }
+
+    private void ApplyKnockback(Vector2 knockbackDirection, float knockbackForce)
+    {
+        if (rb == null)
+        {
+            return;
+        }
+
+        Vector2 direction = knockbackDirection.normalized;
+
+        if (direction == Vector2.zero)
+        {
+            direction = transform.localScale.x >= 0 ? Vector2.left : Vector2.right;
+        }
+
+        direction = new Vector2(
+            direction.x,
+            Mathf.Max(direction.y, upwardKnockbackBias)
+        ).normalized;
+
+        rb.AddForce(direction * knockbackForce * knockbackMultiplier, ForceMode2D.Impulse);
+    }
+
     private void Die(bool playDeathAnimation)
     {
         if (isDead)
@@ -113,7 +153,15 @@ public class PlayerHealth2D : MonoBehaviour
 
         isDead = true;
 
+        if (rb != null)
+        {
+            rb.linearVelocity = Vector2.zero;
+            rb.angularVelocity = 0f;
+        }
+
         Debug.Log($"{gameObject.name} died.");
+
+        OnDeathStarted?.Invoke(this);
 
         AudioManager2D.Instance?.PlayDeath();
 
@@ -137,10 +185,5 @@ public class PlayerHealth2D : MonoBehaviour
 
         deathCoroutine = null;
         OnDied?.Invoke(this);
-    }
-
-    public void SetInvulnerable(bool invulnerable)
-    {
-        isInvulnerable = invulnerable;
     }
 }
