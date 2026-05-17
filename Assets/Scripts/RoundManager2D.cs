@@ -35,6 +35,7 @@ public class RoundManager2D : MonoBehaviour
     private int player1Score;
     private int player2Score;
     private int matchWinTarget = 3;
+    private int matchWinnerNumber;
 
     private bool isRoundEnding;
     private bool matchStarted;
@@ -42,7 +43,7 @@ public class RoundManager2D : MonoBehaviour
     private Arena2D currentArena;
     private Coroutine roundRoutine;
 
-    public event Action OnMatchEnded;
+    public event Action<int> OnMatchEnded;
 
     private void OnEnable()
     {
@@ -71,6 +72,7 @@ public class RoundManager2D : MonoBehaviour
 
         player1Score = 0;
         player2Score = 0;
+        matchWinnerNumber = 0;
 
         UpdateScoreText();
         ClearRoundMessage();
@@ -118,6 +120,7 @@ public class RoundManager2D : MonoBehaviour
         matchStarted = true;
         isRoundEnding = false;
         hasLockedPlayersForDeath = false;
+        matchWinnerNumber = 0;
 
         player1Score = 0;
         player2Score = 0;
@@ -146,6 +149,7 @@ public class RoundManager2D : MonoBehaviour
         matchStarted = false;
         isRoundEnding = false;
         hasLockedPlayersForDeath = false;
+        matchWinnerNumber = 0;
 
         if (weaponSpawner != null)
         {
@@ -232,10 +236,12 @@ public class RoundManager2D : MonoBehaviour
         {
             if (roundWinner == player1Health)
             {
+                matchWinnerNumber = 1;
                 ShowRoundMessage("PLAYER 1 WINS THE MATCH!");
             }
             else if (roundWinner == player2Health)
             {
+                matchWinnerNumber = 2;
                 ShowRoundMessage("PLAYER 2 WINS THE MATCH!");
             }
 
@@ -303,7 +309,7 @@ public class RoundManager2D : MonoBehaviour
         hasLockedPlayersForDeath = false;
         roundRoutine = null;
 
-        OnMatchEnded?.Invoke();
+        OnMatchEnded?.Invoke(matchWinnerNumber);
     }
 
     private IEnumerator StartRoundWithIntro(bool loadNextArena)

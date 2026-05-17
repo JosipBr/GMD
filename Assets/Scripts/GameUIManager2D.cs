@@ -8,7 +8,11 @@ public class GameUIManager2D : MonoBehaviour
     [SerializeField] private GameObject mainMenuPanel;
     [SerializeField] private GameObject settingsPanel;
     [SerializeField] private GameObject pausePanel;
+    [SerializeField] private GameObject victoryPanel;
     [SerializeField] private GameObject gameplayHUD;
+
+    [Header("Victory")]
+    [SerializeField] private TMP_Text victoryTitleText;
 
     [Header("Settings")]
     [SerializeField] private TMP_Text matchLengthText;
@@ -19,6 +23,7 @@ public class GameUIManager2D : MonoBehaviour
     [SerializeField] private GameObject mainMenuFirstButton;
     [SerializeField] private GameObject settingsFirstButton;
     [SerializeField] private GameObject pauseFirstButton;
+    [SerializeField] private GameObject victoryFirstButton;
 
     [Header("Game")]
     [SerializeField] private RoundManager2D roundManager;
@@ -83,6 +88,7 @@ public class GameUIManager2D : MonoBehaviour
         SetPanel(mainMenuPanel, false);
         SetPanel(settingsPanel, false);
         SetPanel(pausePanel, false);
+        SetPanel(victoryPanel, false);
         SetPanel(gameplayHUD, true);
 
         Time.timeScale = 1f;
@@ -110,6 +116,7 @@ public class GameUIManager2D : MonoBehaviour
         SetPanel(mainMenuPanel, true);
         SetPanel(settingsPanel, false);
         SetPanel(pausePanel, false);
+        SetPanel(victoryPanel, false);
         SetPanel(gameplayHUD, false);
 
         SelectButton(mainMenuFirstButton);
@@ -122,6 +129,7 @@ public class GameUIManager2D : MonoBehaviour
         SetPanel(mainMenuPanel, false);
         SetPanel(settingsPanel, true);
         SetPanel(pausePanel, false);
+        SetPanel(victoryPanel, false);
         SetPanel(gameplayHUD, false);
 
         UpdateMatchLengthText();
@@ -135,6 +143,7 @@ public class GameUIManager2D : MonoBehaviour
         SetPanel(mainMenuPanel, true);
         SetPanel(settingsPanel, false);
         SetPanel(pausePanel, false);
+        SetPanel(victoryPanel, false);
 
         SelectButton(mainMenuFirstButton);
     }
@@ -184,6 +193,7 @@ public class GameUIManager2D : MonoBehaviour
         Time.timeScale = 1f;
 
         SetPanel(pausePanel, false);
+        SetPanel(victoryPanel, false);
         SetPanel(gameplayHUD, true);
 
         ApplyMatchLengthToRoundManager();
@@ -205,19 +215,25 @@ public class GameUIManager2D : MonoBehaviour
         Application.Quit();
     }
 
-    private void HandleMatchEnded()
+    private void HandleMatchEnded(int winningPlayerNumber)
     {
         isGameStarted = false;
         isPaused = false;
 
         Time.timeScale = 1f;
 
-        SetPanel(mainMenuPanel, true);
+        if (victoryTitleText != null)
+        {
+            victoryTitleText.text = $"PLAYER {winningPlayerNumber} WINS!";
+        }
+
+        SetPanel(mainMenuPanel, false);
         SetPanel(settingsPanel, false);
         SetPanel(pausePanel, false);
+        SetPanel(victoryPanel, true);
         SetPanel(gameplayHUD, false);
 
-        SelectButton(mainMenuFirstButton);
+        SelectButton(victoryFirstButton);
     }
 
     private void SetupDefaultMatchLength()
