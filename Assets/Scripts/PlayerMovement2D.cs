@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 using System.Collections;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -22,10 +23,15 @@ public class PlayerMovement2D : MonoBehaviour
     [SerializeField] private Vector2 wallCheckSize = new Vector2(0.18f, 1.1f);
     [SerializeField] private float wallSlideSpeed = 2.5f;
 
-    [Header("Input")]
+    [Header("Keyboard Input")]
     [SerializeField] private KeyCode leftKey = KeyCode.A;
     [SerializeField] private KeyCode rightKey = KeyCode.D;
     [SerializeField] private KeyCode jumpKey = KeyCode.W;
+
+    [Header("Gamepad Input")]
+    [SerializeField] private bool useGamepadInput = true;
+    [SerializeField] private int gamepadIndex = 0;
+    [SerializeField] private float gamepadDeadZone = 0.2f;
 
     [Header("Ground Check")]
     [SerializeField] private Transform groundCheck;
@@ -138,12 +144,34 @@ public class PlayerMovement2D : MonoBehaviour
             horizontalInput += 1f;
         }
 
-        if (Input.GetKeyDown(jumpKey))
+        Gamepad gamepad = GetAssignedGamepad();
+
+        if (useGamepadInput && gamepad != null)
+        {
+            float gamepadHorizontal = gamepad.leftStick.x.ReadValue();
+
+            if (Mathf.Abs(gamepadHorizontal) > gamepadDeadZone)
+            {
+                horizontalInput = Mathf.Sign(gamepadHorizontal);
+            }
+        }
+
+        bool gamepadJumpPressed =
+            useGamepadInput &&
+            gamepad != null &&
+            gamepad.buttonSouth.wasPressedThisFrame;
+
+        if (Input.GetKeyDown(jumpKey) || gamepadJumpPressed)
         {
             jumpPressed = true;
         }
 
-        if (Input.GetKeyDown(dashKey))
+        bool gamepadDashPressed =
+            useGamepadInput &&
+            gamepad != null &&
+            gamepad.buttonWest.wasPressedThisFrame;
+
+        if (Input.GetKeyDown(dashKey) || gamepadDashPressed)
         {
             dashPressed = true;
         }
@@ -274,6 +302,21 @@ public class PlayerMovement2D : MonoBehaviour
         {
             playerAnimation.SetWallSliding(false);
         }
+    }
+
+    private Gamepad GetAssignedGamepad()
+    {
+        if (!useGamepadInput)
+        {
+            return null;
+        }
+
+        if (gamepadIndex < 0 || gamepadIndex >= Gamepad.all.Count)
+        {
+            return null;
+        }
+
+        return Gamepad.all[gamepadIndex];
     }
 
     private void HandleLandingSound()

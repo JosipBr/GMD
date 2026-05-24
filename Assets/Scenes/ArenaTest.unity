@@ -2084,6 +2084,9 @@ MonoBehaviour:
   leftKey: 97
   rightKey: 100
   jumpKey: 119
+  useGamepadInput: 1
+  gamepadIndex: 1
+  gamepadDeadZone: 0.2
   groundCheck: {fileID: 1969360858}
   groundCheckRadius: 0.15
   groundLayer:
@@ -2243,6 +2246,8 @@ Transform:
   - {fileID: 1523932142}
   - {fileID: 1587718422}
   - {fileID: 1045594881}
+  - {fileID: 954768790}
+  - {fileID: 1186775788}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &714851565
@@ -2266,6 +2271,8 @@ MonoBehaviour:
   baseKnockbackForce: 8
   baseAttackCooldown: 0.4
   playerAnimation: {fileID: 1845234192}
+  useGamepadInput: 1
+  gamepadIndex: 1
   playerLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -3554,6 +3561,50 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 931796647}
   m_CullTransparentMesh: 1
+--- !u!1 &954768789
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 954768790}
+  - component: {fileID: 954768791}
+  m_Layer: 6
+  m_Name: test
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &954768790
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 954768789}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 714851564}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &954768791
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 954768789}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fef790d91fbe84992a2a05c989412fdd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::JoystickInputDebug2D
 --- !u!1 &956211463
 GameObject:
   m_ObjectHideFlags: 0
@@ -4066,6 +4117,9 @@ MonoBehaviour:
   leftKey: 276
   rightKey: 275
   jumpKey: 273
+  useGamepadInput: 1
+  gamepadIndex: 0
+  gamepadDeadZone: 0.2
   groundCheck: {fileID: 471904692}
   groundCheckRadius: 0.15
   groundLayer:
@@ -4248,6 +4302,8 @@ MonoBehaviour:
   baseKnockbackForce: 8
   baseAttackCooldown: 0.4
   playerAnimation: {fileID: 1949135222}
+  useGamepadInput: 1
+  gamepadIndex: 0
   playerLayer:
     serializedVersion: 2
     m_Bits: 64
@@ -4284,6 +4340,50 @@ MonoBehaviour:
   damageFlashColor: {r: 1, g: 0, b: 0, a: 1}
   flashDuration: 0.08
   flashCount: 2
+--- !u!1 &1186775787
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1186775788}
+  - component: {fileID: 1186775789}
+  m_Layer: 6
+  m_Name: inputdebugger2
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1186775788
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1186775787}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 714851564}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1186775789
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1186775787}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 68fdeb74e60cf4109829c48eef6717bb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GamepadInputDebug2D
 --- !u!1 &1195707606
 GameObject:
   m_ObjectHideFlags: 0

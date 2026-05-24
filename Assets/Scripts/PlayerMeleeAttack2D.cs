@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerMeleeAttack2D : MonoBehaviour
 {
@@ -13,6 +14,10 @@ public class PlayerMeleeAttack2D : MonoBehaviour
     [SerializeField] private float baseKnockbackForce = 8f;
     [SerializeField] private float baseAttackCooldown = 0.4f;
     [SerializeField] private PlayerAnimation2D playerAnimation;
+
+    [Header("Gamepad Input")]
+    [SerializeField] private bool useGamepadInput = true;
+    [SerializeField] private int gamepadIndex = 0;
 
     [Header("Collision")]
     [SerializeField] private LayerMask playerLayer;
@@ -31,13 +36,19 @@ public class PlayerMeleeAttack2D : MonoBehaviour
 
     private void Update()
     {
-
         if (Time.timeScale == 0f)
         {
             return;
         }
-        
-        if (Input.GetKeyDown(attackKey) && Time.time >= nextAttackTime)
+
+        Gamepad gamepad = GetAssignedGamepad();
+
+        bool gamepadAttackPressed =
+            useGamepadInput &&
+            gamepad != null &&
+            gamepad.buttonEast.wasPressedThisFrame;
+
+        if ((Input.GetKeyDown(attackKey) || gamepadAttackPressed) && Time.time >= nextAttackTime)
         {
             PlayEquippedWeaponUseAnimation();
 
@@ -195,6 +206,21 @@ public class PlayerMeleeAttack2D : MonoBehaviour
             equippedWeapon.KnockbackForce,
             playerLayer
         );
+    }
+
+    private Gamepad GetAssignedGamepad()
+    {
+        if (!useGamepadInput)
+        {
+            return null;
+        }
+
+        if (gamepadIndex < 0 || gamepadIndex >= Gamepad.all.Count)
+        {
+            return null;
+        }
+
+        return Gamepad.all[gamepadIndex];
     }
 
     private void OnDrawGizmosSelected()

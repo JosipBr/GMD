@@ -1,6 +1,7 @@
 using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
 
 public class GameUIManager2D : MonoBehaviour
 {
@@ -63,7 +64,7 @@ public class GameUIManager2D : MonoBehaviour
             return;
         }
 
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (Input.GetKeyDown(KeyCode.Escape) || WasGamepadPausePressed())
         {
             if (isPaused)
             {
@@ -234,6 +235,23 @@ public class GameUIManager2D : MonoBehaviour
         SetPanel(gameplayHUD, false);
 
         SelectButton(victoryFirstButton);
+    }
+
+    private bool WasGamepadPausePressed()
+    {
+        foreach (Gamepad gamepad in Gamepad.all)
+        {
+            if (
+                gamepad.startButton.wasPressedThisFrame ||
+                gamepad.selectButton.wasPressedThisFrame ||
+                gamepad.buttonNorth.wasPressedThisFrame
+            )
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private void SetupDefaultMatchLength()

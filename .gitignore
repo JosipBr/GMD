@@ -29,4 +29,13 @@ Assets/Scenes/ONLY FOR VIEWING/
 Assets/Scenes/Demo.unity
 Assets/Scenes/Demo.unity.meta
 
+# Local / release builds
+WebBuild/
+Builds/
+WindowsBuild/
+*.zip
+
+# Crash files
+mono_crash*
+
 sysinfo.txt
